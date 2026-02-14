@@ -1,178 +1,94 @@
-/* 従業員管理 - テーブル形式スタイル */
+/* ========== 従業員管理 ========== */
 
-/* セクションヘッダー（薬剤パネルと統一） */
-#employees-section .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-/* サマリーバー */
+/* 従業員サマリー */
 .employee-summary {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 10px 16px;
-    background: var(--color-tertiary);
-    border-radius: var(--radius-lg);
-    margin-bottom: 16px;
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
-    flex-wrap: wrap;
-}
-
-.employee-summary .summary-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.employee-summary .summary-count {
-    font-weight: var(--font-weight-bold);
-    color: var(--text-primary);
-    font-size: var(--font-size-base);
-}
-
-.employee-summary .summary-divider {
-    width: 1px;
-    height: 16px;
-    background: var(--color-border);
-}
-
-/* テーブルグリッドレイアウト */
-.employee-grid-layout {
     display: grid;
-    grid-template-columns: 2fr 1.2fr 1fr 1fr 1.5fr 1fr 110px;
-    gap: 12px;
-    align-items: center;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
 }
 
-.employee-grid-layout > div {
-    word-wrap: break-word;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    white-space: normal;
+.employee-summary-card {
+    background: var(--color-background);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-divider);
+    padding: var(--spacing-lg);
+    text-align: center;
+    transition: box-shadow var(--transition-base);
 }
 
-/* 氏名列 */
-.col-employee-name {
-    font-weight: var(--font-weight-semibold);
-    color: var(--text-primary);
-    line-height: 1.4;
+.employee-summary-card:hover {
+    box-shadow: var(--shadow-md);
 }
 
-.col-employee-name .employee-furigana {
-    font-size: var(--font-size-xs);
-    color: var(--text-tertiary);
-    font-weight: var(--font-weight-normal);
-    letter-spacing: 0.03em;
-    margin-top: 2px;
-}
-
-/* ステータスバッジ */
-.emp-status {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
-    white-space: nowrap;
-}
-
-.emp-status-active {
-    background: #e6f9f4;
+.employee-summary-card .summary-value {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
     color: var(--color-accent);
+    display: block;
+    margin-bottom: 2px;
 }
 
-.emp-status-leave {
-    background: #fff9e6;
-    color: var(--color-warning);
-}
-
-.emp-status-retired {
-    background: #ffebee;
-    color: var(--color-error);
-}
-
-/* 連絡先アイコン */
-.contact-icons {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.contact-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: var(--radius-sm);
-    background: var(--color-tertiary);
+.employee-summary-card .summary-label {
+    font-size: var(--font-size-xs);
     color: var(--text-secondary);
+    font-weight: var(--font-weight-medium);
+}
+
+/* 従業員グリッドレイアウト */
+.employee-grid-layout {
+    grid-template-columns: 1.5fr 1fr 0.8fr 0.8fr 1.2fr 0.8fr 0.6fr;
+    gap: var(--spacing-md);
+}
+
+/* 従業員ステータスバッジ */
+.employee-status {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: var(--radius-full);
     font-size: var(--font-size-xs);
-    cursor: pointer;
-    transition: all var(--transition-base);
-    text-decoration: none;
-    border: 1px solid transparent;
+    font-weight: var(--font-weight-semibold);
 }
 
-.contact-icon:hover {
-    background: var(--color-accent-light);
-    color: var(--color-accent);
-    border-color: var(--color-accent);
-    transform: translateY(-1px);
+.employee-status.status-在籍 {
+    background: #e8f5e9;
+    color: #2e7d32;
 }
 
-.contact-icon.disabled {
-    opacity: 0.3;
-    cursor: default;
-    pointer-events: none;
+.employee-status.status-休職 {
+    background: #fff3e0;
+    color: #e65100;
 }
 
-/* 休職・退職行のハイライト */
-.list-row.is-leave {
-    background-color: #fffbe6;
-    border-left: 3px solid var(--color-warning);
+.employee-status.status-退職 {
+    background: #f5f5f5;
+    color: #9e9e9e;
 }
 
-.list-row.is-retired {
-    background-color: #fff5f5;
-    border-left: 3px solid var(--color-error);
-    opacity: 0.7;
-}
-
-/* 詳細モーダル */
+/* 従業員詳細モーダル */
 .employee-detail-grid {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: var(--spacing-lg);
 }
 
 .employee-detail-grid .detail-section {
     background: var(--color-surface);
-    border-radius: var(--radius-lg);
-    padding: 16px 20px;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
 }
 
 .employee-detail-grid .detail-section h4 {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-accent);
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: var(--spacing-md);
 }
 
 .employee-detail-grid .detail-row {
-    display: grid;
-    grid-template-columns: 100px 1fr;
-    gap: 12px;
-    padding: 6px 0;
+    display: flex;
+    gap: var(--spacing-md);
+    padding: var(--spacing-xs) 0;
     font-size: var(--font-size-sm);
     border-bottom: 1px solid var(--color-divider);
 }
@@ -181,64 +97,59 @@
     border-bottom: none;
 }
 
-.employee-detail-grid .detail-label {
-    font-weight: var(--font-weight-medium);
-    color: var(--text-secondary);
-}
-
-.employee-detail-grid .detail-value {
-    color: var(--text-primary);
-}
-
-/* シフト表示（詳細モーダル内） */
-.emp-shift-list {
+/* 従業員名セル */
+.employee-name-cell {
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
+    flex-direction: column;
+    gap: 2px;
 }
 
-.emp-shift-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-xs);
-    background: var(--color-tertiary);
-    color: var(--text-secondary);
-    border: 1px solid var(--color-divider);
-}
-
-.emp-shift-tag .shift-date {
+.employee-name-cell .name {
     font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
 }
 
-/* レスポンシブ */
-@media (max-width: 1200px) {
+.employee-name-cell .furigana {
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+}
+
+/* 従業員連絡先 */
+.employee-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+}
+
+.employee-contact i {
+    margin-right: 4px;
+    width: 12px;
+    text-align: center;
+    color: var(--text-tertiary);
+}
+
+/* ========== レスポンシブ ========== */
+@media (max-width: 1024px) {
     .employee-grid-layout {
-        grid-template-columns: 1.5fr 1fr 1fr 1fr 1.2fr 1fr 100px;
-        font-size: var(--font-size-xs);
+        grid-template-columns: 1.5fr 1fr 0.8fr 0.8fr 1fr 0.8fr 0.6fr;
     }
 }
 
 @media (max-width: 768px) {
     .employee-grid-layout {
-        grid-template-columns: 1fr;
-        gap: 4px;
+        grid-template-columns: 1fr 1fr auto auto;
     }
-
-    .employee-grid-layout .list-header > div:not(:first-child) {
+    
+    .employee-grid-layout > div:nth-child(5),
+    .employee-grid-layout > div:nth-child(6) {
         display: none;
     }
+}
 
+@media (max-width: 640px) {
     .employee-summary {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-
-    .employee-summary .summary-divider {
-        display: none;
+        grid-template-columns: repeat(2, 1fr);
     }
 }
