@@ -1,0 +1,244 @@
+/* 従業員管理 - テーブル形式スタイル */
+
+/* セクションヘッダー（薬剤パネルと統一） */
+#employees-section .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+/* サマリーバー */
+.employee-summary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 16px;
+    background: var(--color-tertiary);
+    border-radius: var(--radius-lg);
+    margin-bottom: 16px;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+}
+
+.employee-summary .summary-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.employee-summary .summary-count {
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+}
+
+.employee-summary .summary-divider {
+    width: 1px;
+    height: 16px;
+    background: var(--color-border);
+}
+
+/* テーブルグリッドレイアウト */
+.employee-grid-layout {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1fr 1fr 1.5fr 1fr 110px;
+    gap: 12px;
+    align-items: center;
+}
+
+.employee-grid-layout > div {
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+/* 氏名列 */
+.col-employee-name {
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.col-employee-name .employee-furigana {
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+    font-weight: var(--font-weight-normal);
+    letter-spacing: 0.03em;
+    margin-top: 2px;
+}
+
+/* ステータスバッジ */
+.emp-status {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
+}
+
+.emp-status-active {
+    background: #e6f9f4;
+    color: var(--color-accent);
+}
+
+.emp-status-leave {
+    background: #fff9e6;
+    color: var(--color-warning);
+}
+
+.emp-status-retired {
+    background: #ffebee;
+    color: var(--color-error);
+}
+
+/* 連絡先アイコン */
+.contact-icons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.contact-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    background: var(--color-tertiary);
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-decoration: none;
+    border: 1px solid transparent;
+}
+
+.contact-icon:hover {
+    background: var(--color-accent-light);
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    transform: translateY(-1px);
+}
+
+.contact-icon.disabled {
+    opacity: 0.3;
+    cursor: default;
+    pointer-events: none;
+}
+
+/* 休職・退職行のハイライト */
+.list-row.is-leave {
+    background-color: #fffbe6;
+    border-left: 3px solid var(--color-warning);
+}
+
+.list-row.is-retired {
+    background-color: #fff5f5;
+    border-left: 3px solid var(--color-error);
+    opacity: 0.7;
+}
+
+/* 詳細モーダル */
+.employee-detail-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.employee-detail-grid .detail-section {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+}
+
+.employee-detail-grid .detail-section h4 {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-accent);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.employee-detail-grid .detail-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 12px;
+    padding: 6px 0;
+    font-size: var(--font-size-sm);
+    border-bottom: 1px solid var(--color-divider);
+}
+
+.employee-detail-grid .detail-row:last-child {
+    border-bottom: none;
+}
+
+.employee-detail-grid .detail-label {
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+}
+
+.employee-detail-grid .detail-value {
+    color: var(--text-primary);
+}
+
+/* シフト表示（詳細モーダル内） */
+.emp-shift-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.emp-shift-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    background: var(--color-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--color-divider);
+}
+
+.emp-shift-tag .shift-date {
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+}
+
+/* レスポンシブ */
+@media (max-width: 1200px) {
+    .employee-grid-layout {
+        grid-template-columns: 1.5fr 1fr 1fr 1fr 1.2fr 1fr 100px;
+        font-size: var(--font-size-xs);
+    }
+}
+
+@media (max-width: 768px) {
+    .employee-grid-layout {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+
+    .employee-grid-layout .list-header > div:not(:first-child) {
+        display: none;
+    }
+
+    .employee-summary {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .employee-summary .summary-divider {
+        display: none;
+    }
+}

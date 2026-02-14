@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>緑ヶ丘調剤薬局 - 情報共有ポータル</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/shift-medicine.css">
+    <link rel="stylesheet" href="css/employees.css">
+    <link rel="stylesheet" href="css/ai-chat.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/shift-presets.css">
+    <link rel="stylesheet" href="css/medicine-panel.css">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-hospital"></i>
+                <h1>緑ヶ丘調剤薬局</h1>
+            </div>
+            <nav class="nav">
+                <button class="nav-btn active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>ダッシュボード</span>
+                </button>
+                <button class="nav-btn" data-section="announcements">
+                    <i class="fas fa-bullhorn"></i>
+                    <span>お知らせ</span>
+                </button>
+                <button class="nav-btn" data-section="shifts">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>シフト管理</span>
+                </button>
+                <button class="nav-btn" data-section="medicines">
+                    <i class="fas fa-pills"></i>
+                    <span>薬剤情報</span>
+                </button>
+                <button class="nav-btn" data-section="employees">
+                    <i class="fas fa-users"></i>
+                    <span>従業員管理</span>
+                </button>
+                <button class="nav-btn" data-section="ai-chat">
+                    <i class="fas fa-robot"></i>
+                    <span>AIアシスタント</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- トースト通知コンテナ -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- 確認ダイアログ -->
+    <div id="confirm-dialog" class="confirm-dialog-overlay" style="display:none;">
+        <div class="confirm-dialog">
+            <div class="confirm-dialog-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="confirm-dialog-title" id="confirm-dialog-title">確認</h3>
+            <p class="confirm-dialog-message" id="confirm-dialog-message">この操作を実行してもよろしいですか？</p>
+            <div class="confirm-dialog-actions">
+                <button class="btn btn-secondary" id="confirm-dialog-cancel">キャンセル</button>
+                <button class="btn btn-danger" id="confirm-dialog-ok">削除する</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <main class="main-content">
+        <!-- ダッシュボードセクション -->
+        <section id="dashboard-section" class="content-section active">
+            <div class="section-header">
+                <h2><i class="fas fa-tachometer-alt"></i> ダッシュボード</h2>
+                <div class="dashboard-header-right">
+                    <div class="dashboard-date" id="dashboard-date"></div>
+                    <button class="btn btn-secondary btn-sm" id="dashboardCustomizeBtn" onclick="toggleDashboardCustomize()">
+                        <i class="fas fa-cog"></i> カスタマイズ
+                    </button>
+                </div>
+            </div>
+
+            <!-- カスタマイズパネル -->
+            <div class="dashboard-customize-panel" id="dashboardCustomizePanel" style="display:none;">
+                <div class="customize-panel-header">
+                    <h4><i class="fas fa-sliders-h"></i> ダッシュボードのカスタマイズ</h4>
+                    <p class="customize-hint">表示するウィジェットを選択し、ドラッグで並び替えできます</p>
+                </div>
+                <div class="customize-widget-list" id="customizeWidgetList">
+                    <!-- JSで動的に生成 -->
+                </div>
+                <div class="customize-panel-footer">
+                    <button class="btn btn-secondary btn-sm" onclick="resetDashboardLayout()">
+                        <i class="fas fa-undo"></i> デフォルトに戻す
+                    </button>
+                    <button class="btn btn-primary btn-sm" onclick="toggleDashboardCustomize()">
+                        <i class="fas fa-check"></i> 完了
+                    </button>
+                </div>
+            </div>
+
+            <!-- サマリーカード -->
+            <div class="dashboard-summary-cards">
+                <div class="summary-card summary-card-shifts" onclick="switchSection('shifts')">
+                    <div class="summary-card-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="summary-card-content">
+                        <div class="summary-card-value" id="dash-today-shifts">-</div>
+                        <div class="summary-card-label">今日のシフト</div>
+                    </div>
+                </div>
+                <div class="summary-card summary-card-announcements" onclick="switchSection('announcements')">
+                    <div class="summary-card-icon"><i class="fas fa-bullhorn"></i></div>
+                    <div class="summary-card-content">
+                        <div class="summary-card-value" id="dash-announcements-count">-</div>
+                        <div class="summary-card-label">お知らせ</div>
+                    </div>
+                </div>
+                <div class="summary-card summary-card-medicines" onclick="switchSection('medicines')">
+                    <div class="summary-card-icon"><i class="fas fa-pills"></i></div>
+                    <div class="summary-card-content">
+                        <div class="summary-card-value" id="dash-medicines-count">-</div>
+                        <div class="summary-card-label">登録薬剤数</div>
+                    </div>
+                </div>
+                <div class="summary-card summary-card-employees" onclick="switchSection('employees')">
+                    <div class="summary-card-icon"><i class="fas fa-users"></i></div>
+                    <div class="summary-card-content">
+                        <div class="summary-card-value" id="dash-employees-count">-</div>
+                        <div class="summary-card-label">在籍スタッフ</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ダッシュボード2カラムレイアウト -->
+            <div class="dashboard-grid" id="dashboardGrid">
+                <!-- 左カラム -->
+                <div class="dashboard-column" id="dashboardColLeft">
+                    <!-- 今日のシフト -->
+                    <div class="dashboard-card" data-widget-id="today-shifts" draggable="true">
+                        <div class="dashboard-card-header">
+                            <div class="card-header-left">
+                                <span class="drag-handle" title="ドラッグで並び替え"><i class="fas fa-grip-vertical"></i></span>
+                                <h3><i class="fas fa-calendar-day"></i> 今日のシフト</h3>
+                            </div>
+                            <button class="btn-link" onclick="switchSection('shifts')">すべて表示 <i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="dashboard-card-body" id="dash-today-shift-list">
+                            <div class="loading-placeholder">読み込み中...</div>
+                        </div>
+                    </div>
+
+                    <!-- 出荷調整・販売中止薬剤 -->
+                    <div class="dashboard-card dashboard-card-warning" data-widget-id="alert-medicines" draggable="true">
+                        <div class="dashboard-card-header">
+                            <div class="card-header-left">
+                                <span class="drag-handle" title="ドラッグで並び替え"><i class="fas fa-grip-vertical"></i></span>
+                                <h3><i class="fas fa-exclamation-triangle"></i> 要注意薬剤</h3>
+                            </div>
+                            <button class="btn-link" onclick="switchSection('medicines')">すべて表示 <i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="dashboard-card-body" id="dash-alert-medicines">
+                            <div class="loading-placeholder">読み込み中...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右カラム -->
+                <div class="dashboard-column" id="dashboardColRight">
+                    <!-- 最新のお知らせ -->
+                    <div class="dashboard-card" data-widget-id="recent-announcements" draggable="true">
+                        <div class="dashboard-card-header">
+                            <div class="card-header-left">
+                                <span class="drag-handle" title="ドラッグで並び替え"><i class="fas fa-grip-vertical"></i></span>
+                                <h3><i class="fas fa-bullhorn"></i> 最新のお知らせ</h3>
+                            </div>
+                            <button class="btn-link" onclick="switchSection('announcements')">すべて表示 <i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="dashboard-card-body" id="dash-recent-announcements">
+                            <div class="loading-placeholder">読み込み中...</div>
+                        </div>
+                    </div>
+
+                    <!-- クイックアクセス -->
+                    <div class="dashboard-card" data-widget-id="quick-access" draggable="true">
+                        <div class="dashboard-card-header">
+                            <div class="card-header-left">
+                                <span class="drag-handle" title="ドラッグで並び替え"><i class="fas fa-grip-vertical"></i></span>
+                                <h3><i class="fas fa-bolt"></i> クイックアクセス</h3>
+                            </div>
+                        </div>
+                        <div class="dashboard-card-body">
+                            <div class="quick-access-grid">
+                                <button class="quick-access-btn" onclick="switchSection('announcements'); setTimeout(() => document.getElementById('add-announcement-btn').click(), 100)">
+                                    <i class="fas fa-plus-circle"></i>
+                                    <span>お知らせ投稿</span>
+                                </button>
+                                <button class="quick-access-btn" onclick="switchSection('shifts'); setTimeout(() => document.getElementById('add-shift-btn').click(), 100)">
+                                    <i class="fas fa-calendar-plus"></i>
+                                    <span>シフト追加</span>
+                                </button>
+                                <button class="quick-access-btn" onclick="switchSection('medicines'); setTimeout(() => openMedicineInputCard(), 100)">
+                                    <i class="fas fa-capsules"></i>
+                                    <span>薬剤登録</span>
+                                </button>
+                                <button class="quick-access-btn" onclick="switchSection('employees'); setTimeout(() => document.getElementById('add-employee-btn').click(), 100)">
+                                    <i class="fas fa-user-plus"></i>
+                                    <span>従業員登録</span>
+                                </button>
+                                <button class="quick-access-btn" onclick="switchSection('ai-chat')">
+                                    <i class="fas fa-robot"></i>
+                                    <span>AI相談</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- お知らせ掲示板セクション -->
+        <section id="announcements-section" class="content-section">
+            <div class="section-header">
+                <h2><i class="fas fa-bullhorn"></i> お知らせ掲示板</h2>
+                <button class="btn btn-primary" id="add-announcement-btn">
+                    <i class="fas fa-plus"></i> 新規投稿
+                </button>
+            </div>
+
+            <!-- フィルター -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>カテゴリー:</label>
+                    <select id="announcement-category-filter">
+                        <option value="">全て</option>
+                        <option value="業務連絡">業務連絡</option>
+                        <option value="研修情報">研修情報</option>
+                        <option value="その他">その他</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>重要度:</label>
+                    <select id="announcement-priority-filter">
+                        <option value="">全て</option>
+                        <option value="緊急">緊急</option>
+                        <option value="重要">重要</option>
+                        <option value="通常">通常</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- お知らせ一覧 -->
+            <div id="announcements-list" class="announcements-list">
+                <!-- お知らせカードがここに動的に表示されます -->
+            </div>
+        </section>
+
+        <!-- シフト管理セクション -->
+        <section id="shifts-section" class="content-section">
+            <div class="section-header">
+                <h2><i class="fas fa-calendar-alt"></i> シフト管理</h2>
+                <button class="btn btn-primary" id="add-shift-btn">
+                    <i class="fas fa-plus"></i> シフト追加
+                </button>
+            </div>
+
+            <!-- 月選択 -->
+            <div class="month-selector">
+                <button class="btn-icon" id="prev-month-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h3 id="current-month-display"></h3>
+                <button class="btn-icon" id="next-month-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <!-- カレンダービュー -->
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <div class="calendar-day-header">日</div>
+                    <div class="calendar-day-header">月</div>
+                    <div class="calendar-day-header">火</div>
+                    <div class="calendar-day-header">水</div>
+                    <div class="calendar-day-header">木</div>
+                    <div class="calendar-day-header">金</div>
+                    <div class="calendar-day-header">土</div>
+                </div>
+                <div id="calendar-grid" class="calendar-grid">
+                    <!-- カレンダーがここに動的に表示されます -->
+                </div>
+            </div>
+
+            <!-- スタッフ別シフト一覧 -->
+            <div class="shift-list-container">
+                <h3>スタッフ別シフト一覧</h3>
+                <div id="staff-shift-list" class="staff-shift-list">
+                    <!-- スタッフ別シフトがここに表示されます -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 薬剤情報検索セクション -->
+        <section id="medicines-section" class="content-section">
+            <div class="section-header">
+                <div class="header-left">
+                    <h2><i class="fas fa-pills"></i> 薬剤情報管理</h2>
+                </div>
+                <div class="header-right">
+                    <input type="text" class="search-input" id="medicine-search-input" placeholder="薬剤名・一般名・備考で検索..." oninput="renderMedicineList()">
+                    <select id="medicine-category-filter" class="action-btn" onchange="renderMedicineList()">
+                        <option value="">全カテゴリー</option>
+                        <option value="内服薬">内服薬</option>
+                        <option value="外用薬">外用薬</option>
+                        <option value="注射薬">注射薬</option>
+                        <option value="漢方薬">漢方薬</option>
+                        <option value="その他">その他</option>
+                    </select>
+                    <select id="medicine-status-filter" class="action-btn" onchange="renderMedicineList()">
+                        <option value="">全販売状態</option>
+                        <option value="その他">その他</option>
+                        <option value="販売中止">販売中止</option>
+                        <option value="出荷調整中">出荷調整中</option>
+                        <option value="新規採用">新規採用</option>
+                    </select>
+                    <div class="view-toggle-group">
+                        <button class="view-toggle-btn active" id="viewTableBtn" onclick="setMedicineViewMode('table')" title="テーブル表示">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button class="view-toggle-btn" id="viewCardBtn" onclick="setMedicineViewMode('card')" title="カード表示">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                    </div>
+                    <button class="btn btn-primary" onclick="openMedicineInputCard()">
+                        <i class="fas fa-plus"></i> 新規登録
+                    </button>
+                </div>
+            </div>
+
+            <!-- フィルターサマリー -->
+            <div class="medicine-filter-summary" id="medicineFilterSummary" style="display:none;">
+                <span class="filter-summary-text" id="filterSummaryText"></span>
+                <button class="filter-clear-btn" onclick="clearMedicineFilters()"><i class="fas fa-times"></i> フィルター解除</button>
+            </div>
+
+            <!-- 入力カード -->
+            <div class="input-card" id="medicineInputCard">
+                <div class="input-header" onclick="document.getElementById('medicineInputCard').classList.toggle('is-open')">
+                    <span>✏️ 新規薬剤登録</span><span>▼</span>
+                </div>
+                <div class="input-body medicine-input-body">
+                    <div class="input-group">
+                        <label>薬剤名 <span class="required">*</span></label>
+                        <input type="text" id="inMedicineName" placeholder="薬剤名を入力">
+                    </div>
+                    <div class="input-group">
+                        <label>一般名</label>
+                        <input type="text" id="inMedicineGenericName" placeholder="一般名">
+                    </div>
+                    <div class="input-group">
+                        <label>カテゴリー <span class="required">*</span></label>
+                        <select id="inMedicineCategory">
+                            <option value="">選択してください</option>
+                            <option value="内服薬">内服薬</option>
+                            <option value="外用薬">外用薬</option>
+                            <option value="注射薬">注射薬</option>
+                            <option value="漢方薬">漢方薬</option>
+                            <option value="その他">その他</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>販売状態 <span class="required">*</span></label>
+                        <select id="inMedicineSalesStatus">
+                            <option value="その他">その他</option>
+                            <option value="販売中止">販売中止</option>
+                            <option value="出荷調整中">出荷調整中</option>
+                            <option value="新規採用">新規採用</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>販売中止日</label>
+                        <input type="text" id="inMedicineDiscontinuationDate" placeholder="例: 2026年3月31日">
+                    </div>
+                    <div class="input-group">
+                        <label>代替薬品名</label>
+                        <input type="text" id="inMedicineAlternative" placeholder="代替薬品名">
+                    </div>
+                    <div class="input-group">
+                        <label>出荷調整情報</label>
+                        <textarea id="inMedicineSupplyInfo" placeholder="出荷調整の詳細"></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>備考</label>
+                        <textarea id="inMedicineNotes" placeholder="その他の情報"></textarea>
+                    </div>
+                    <div class="input-group" style="align-self: end;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="inMedicineIsFavorite">
+                            <span>よく使う薬剤</span>
+                        </label>
+                    </div>
+                    <button class="add-btn" onclick="addMedicine()">追加</button>
+                </div>
+            </div>
+
+            <!-- テーブル表示 -->
+            <div class="list-wrapper" id="medicineTableView">
+                <div class="list-header medicine-grid-layout">
+                    <div style="text-align:center">★</div>
+                    <div>薬剤名</div>
+                    <div>一般名</div>
+                    <div>カテゴリー</div>
+                    <div>販売状態</div>
+                    <div>代替薬品</div>
+                    <div>備考</div>
+                    <div style="text-align:center">操作</div>
+                </div>
+                <div class="list-body" id="medicineListBody">
+                    <!-- 薬剤がここに表示されます -->
+                </div>
+            </div>
+
+            <!-- カード表示 -->
+            <div class="medicine-card-grid" id="medicineCardView" style="display:none;">
+                <!-- カードがここに表示されます -->
+            </div>
+        </section>
+
+        <!-- 従業員管理セクション -->
+        <section id="employees-section" class="content-section">
+            <div class="section-header">
+                <div class="header-left">
+                    <h2><i class="fas fa-users"></i> 従業員管理</h2>
+                    <div class="btn-group">
+                        <button class="action-btn active" id="btnEmployeeActive" onclick="setEmployeeFilter('active')">在籍</button>
+                        <button class="action-btn" id="btnEmployeeAll" onclick="setEmployeeFilter('all')">全て</button>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <input type="text" class="search-input" id="employee-search-input" placeholder="氏名・フリガナで検索..." oninput="renderEmployeeList()">
+                    <select id="employee-position-filter" class="action-btn" onchange="renderEmployeeList()">
+                        <option value="">全役職</option>
+                        <option value="薬局長">薬局長</option>
+                        <option value="管理薬剤師">管理薬剤師</option>
+                        <option value="薬剤師">薬剤師</option>
+                        <option value="医療事務">医療事務</option>
+                        <option value="調剤事務">調剤事務</option>
+                        <option value="登録販売者">登録販売者</option>
+                        <option value="パート">パート</option>
+                    </select>
+                    <button class="btn btn-primary" id="add-employee-btn">
+                        <i class="fas fa-plus"></i> 従業員登録
+                    </button>
+                </div>
+            </div>
+
+            <!-- サマリー -->
+            <div class="employee-summary" id="employee-summary">
+                <!-- 動的に表示 -->
+            </div>
+
+            <!-- リスト表示（テーブル形式） -->
+            <div class="list-wrapper">
+                <div class="list-header employee-grid-layout">
+                    <div>氏名</div>
+                    <div>役職</div>
+                    <div>雇用形態</div>
+                    <div>ステータス</div>
+                    <div>連絡先</div>
+                    <div>入社日</div>
+                    <div style="text-align:center">操作</div>
+                </div>
+                <div class="list-body" id="employeeListBody">
+                    <!-- 従業員がここに表示されます -->
+                </div>
+            </div>
+        </section>
+
+        <!-- AIアシスタントセクション -->
+        <section id="ai-chat-section" class="content-section">
+            <div class="section-header">
+                <h2><i class="fas fa-robot"></i> AIアシスタント</h2>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-secondary" id="api-key-btn" onclick="window.openAPIKeyModal()">
+                        <i class="fas fa-key"></i> APIキー設定
+                    </button>
+                    <button class="btn btn-secondary" id="clear-chat-btn">
+                        <i class="fas fa-trash"></i> 履歴クリア
+                    </button>
+                </div>
+            </div>
+
+            <!-- チャットコンテナ -->
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="welcome-message">
+                        <div class="ai-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <h3>緑ヶ丘調剤薬局AIアシスタント (Powered by Google Gemini)</h3>
+                            <p>こんにちは！薬局業務に関するご質問や、薬剤情報の検索、シフト管理のサポートなど、何でもお手伝いいたします。お気軽にご質問ください。</p>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                                <i class="fas fa-info-circle"></i> 
+                                <strong>初回利用時の設定：</strong> 「APIキー設定」ボタンから Google Gemini APIキーを設定してください。
+                            </p>
+                            <div class="quick-actions">
+                                <button class="quick-action-btn" data-message="販売中止になった薬剤を教えて">
+                                    <i class="fas fa-pills"></i> 販売中止薬剤
+                                </button>
+                                <button class="quick-action-btn" data-message="今月のシフトを確認したい">
+                                    <i class="fas fa-calendar"></i> 今月のシフト
+                                </button>
+                                <button class="quick-action-btn" data-message="よく使う薬剤を表示して">
+                                    <i class="fas fa-star"></i> よく使う薬剤
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- チャット入力エリア -->
+                <div class="chat-input-container">
+                    <div class="chat-input-wrapper">
+                        <textarea 
+                            id="chat-input" 
+                            class="chat-input" 
+                            placeholder="メッセージを入力してください..."
+                            rows="1"
+                        ></textarea>
+                        <button class="send-btn" id="send-chat-btn" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <div class="chat-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span>AIは薬局内の情報を基にお答えします（Powered by Google Gemini 1.5 Flash）</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- モーダル: お知らせ追加/編集 -->
+    <div id="announcement-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="announcement-modal-title">新規お知らせ投稿</h3>
+                <button class="close-btn" onclick="closeAnnouncementModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="announcement-form">
+                <input type="hidden" id="announcement-id">
+                <div class="form-group">
+                    <label>タイトル <span class="required">*</span></label>
+                    <input type="text" id="announcement-title" required>
+                </div>
+                <div class="form-group">
+                    <label>カテゴリー <span class="required">*</span></label>
+                    <select id="announcement-category" required>
+                        <option value="">選択してください</option>
+                        <option value="業務連絡">業務連絡</option>
+                        <option value="研修情報">研修情報</option>
+                        <option value="その他">その他</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>重要度 <span class="required">*</span></label>
+                    <select id="announcement-priority" required>
+                        <option value="通常">通常</option>
+                        <option value="重要">重要</option>
+                        <option value="緊急">緊急</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>投稿者 <span class="required">*</span></label>
+                    <input type="text" id="announcement-author" required>
+                </div>
+                <div class="form-group">
+                    <label>内容 <span class="required">*</span></label>
+                    <textarea id="announcement-content" rows="6" required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeAnnouncementModal()">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">投稿</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- モーダル: シフト追加/編集 -->
+    <div id="shift-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="shift-modal-title">シフト追加</h3>
+                <button class="close-btn" onclick="closeShiftModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="shift-form">
+                <input type="hidden" id="shift-id">
+                <div class="form-group">
+                    <label>スタッフ名 <span class="required">*</span></label>
+                    <select id="shift-staff-name" required>
+                        <option value="">選択してください</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>勤務日 <span class="required">*</span></label>
+                    <input type="date" id="shift-date" required>
+                </div>
+                <div class="form-group">
+                    <label>勤務時間帯 <span class="required">*</span></label>
+                    <input type="text" id="shift-type" placeholder="例：早番、日勤、夜勤など" required>
+                    <div class="shift-type-presets" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
+                        <button type="button" class="preset-btn" onclick="setShiftType('早番')">早番</button>
+                        <button type="button" class="preset-btn" onclick="setShiftType('中番')">中番</button>
+                        <button type="button" class="preset-btn" onclick="setShiftType('遅番')">遅番</button>
+                        <button type="button" class="preset-btn" onclick="setShiftType('全日')">全日</button>
+                        <button type="button" class="preset-btn" onclick="setShiftType('日勤')">日勤</button>
+                        <button type="button" class="preset-btn" onclick="setShiftType('夜勤')">夜勤</button>
+                        <button type="button" class="preset-btn" onclick="setShiftType('休み')">休み</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>開始時間</label>
+                    <input type="time" id="shift-start-time">
+                </div>
+                <div class="form-group">
+                    <label>終了時間</label>
+                    <input type="time" id="shift-end-time">
+                </div>
+                <div class="form-group">
+                    <label>備考</label>
+                    <textarea id="shift-notes" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeShiftModal()">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- モーダル: 薬剤情報追加/編集 -->
+    <div id="medicine-modal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="medicine-modal-title">薬剤情報登録</h3>
+                <button class="close-btn" onclick="closeMedicineModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="medicine-form">
+                <input type="hidden" id="medicine-id">
+                <div class="form-group">
+                    <label>薬剤名 <span class="required">*</span></label>
+                    <input type="text" id="medicine-name" required>
+                </div>
+                <div class="form-group">
+                    <label>一般名</label>
+                    <input type="text" id="medicine-generic-name">
+                </div>
+                <div class="form-group">
+                    <label>カテゴリー <span class="required">*</span></label>
+                    <select id="medicine-category-input" required>
+                        <option value="">選択してください</option>
+                        <option value="内服薬">内服薬</option>
+                        <option value="外用薬">外用薬</option>
+                        <option value="注射薬">注射薬</option>
+                        <option value="漢方薬">漢方薬</option>
+                        <option value="その他">その他</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>販売状態 <span class="required">*</span></label>
+                    <select id="medicine-sales-status" required>
+                        <option value="">選択してください</option>
+                        <option value="その他">その他</option>
+                        <option value="販売中止">販売中止</option>
+                        <option value="出荷調整中">出荷調整中</option>
+                        <option value="新規採用">新規採用</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>販売中止日</label>
+                    <input type="text" id="medicine-discontinuation-date" placeholder="例: 2026年3月31日">
+                </div>
+                <div class="form-group">
+                    <label>代替薬品名</label>
+                    <input type="text" id="medicine-alternative" placeholder="販売中止後の代替薬品名">
+                </div>
+                <div class="form-group">
+                    <label>出荷調整情報</label>
+                    <textarea id="medicine-supply-info" rows="3" placeholder="出荷調整の詳細や入荷予定など"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>備考</label>
+                    <textarea id="medicine-notes" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="medicine-is-favorite">
+                        <span>よく使う薬剤に設定</span>
+                    </label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeMedicineModal()">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- モーダル: 薬剤詳細表示 -->
+    <div id="medicine-detail-modal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="medicine-detail-name"></h3>
+                <button class="close-btn" onclick="closeMedicineDetailModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="medicine-detail-content">
+                <div class="detail-section">
+                    <div class="detail-row">
+                        <strong>一般名:</strong>
+                        <span id="medicine-detail-generic-name"></span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>カテゴリー:</strong>
+                        <span id="medicine-detail-category"></span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>販売状態:</strong>
+                        <span id="medicine-detail-sales-status" class="badge"></span>
+                    </div>
+                    <div class="detail-row" id="medicine-detail-discontinuation-row" style="display: none;">
+                        <strong>販売中止日:</strong>
+                        <span id="medicine-detail-discontinuation-date"></span>
+                    </div>
+                    <div class="detail-row" id="medicine-detail-alternative-row" style="display: none;">
+                        <strong>代替薬品:</strong>
+                        <span id="medicine-detail-alternative"></span>
+                    </div>
+                </div>
+                <div class="detail-section" id="medicine-detail-supply-section" style="display: none;">
+                    <h4><i class="fas fa-exclamation-triangle"></i> 出荷調整情報</h4>
+                    <p id="medicine-detail-supply-info"></p>
+                </div>
+                <div class="detail-section" id="medicine-detail-notes-section" style="display: none;">
+                    <h4><i class="fas fa-sticky-note"></i> 備考</h4>
+                    <p id="medicine-detail-notes"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeMedicineDetailModal()">閉じる</button>
+                <button class="btn btn-primary" onclick="editMedicineFromDetail()">
+                    <i class="fas fa-edit"></i> 編集
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- モーダル: 従業員追加/編集 -->
+    <div id="employee-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="employee-modal-title">従業員登録</h3>
+                <button class="close-btn" onclick="closeEmployeeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="employee-form">
+                <input type="hidden" id="employee-id">
+                <div class="form-group">
+                    <label>氏名 <span class="required">*</span></label>
+                    <input type="text" id="employee-name" required>
+                </div>
+                <div class="form-group">
+                    <label>フリガナ <span class="required">*</span></label>
+                    <input type="text" id="employee-furigana" required placeholder="例: ヤマダ タロウ">
+                </div>
+                <div class="form-group">
+                    <label>役職 <span class="required">*</span></label>
+                    <select id="employee-position" required>
+                        <option value="">選択してください</option>
+                        <option value="薬局長">薬局長</option>
+                        <option value="管理薬剤師">管理薬剤師</option>
+                        <option value="薬剤師">薬剤師</option>
+                        <option value="医療事務">医療事務</option>
+                        <option value="調剤事務">調剤事務</option>
+                        <option value="登録販売者">登録販売者</option>
+                        <option value="パート">パート</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>雇用形態 <span class="required">*</span></label>
+                    <select id="employee-employment-type" required>
+                        <option value="">選択してください</option>
+                        <option value="正社員">正社員</option>
+                        <option value="契約社員">契約社員</option>
+                        <option value="パート">パート</option>
+                        <option value="アルバイト">アルバイト</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>電話番号</label>
+                    <input type="tel" id="employee-phone" placeholder="例: 090-1234-5678">
+                </div>
+                <div class="form-group">
+                    <label>メールアドレス</label>
+                    <input type="email" id="employee-email" placeholder="例: example@pharmacy.co.jp">
+                </div>
+                <div class="form-group">
+                    <label>入社日</label>
+                    <input type="text" id="employee-hire-date" placeholder="例: 2024年4月1日">
+                </div>
+                <div class="form-group">
+                    <label>資格情報</label>
+                    <input type="text" id="employee-qualifications" placeholder="例: 薬剤師免許 第123456号">
+                </div>
+                <div class="form-group">
+                    <label>ステータス <span class="required">*</span></label>
+                    <select id="employee-status" required>
+                        <option value="在籍">在籍</option>
+                        <option value="休職">休職</option>
+                        <option value="退職">退職</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>備考</label>
+                    <textarea id="employee-notes" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeEmployeeModal()">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- モーダル: 従業員詳細表示 -->
+    <div id="employee-detail-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>従業員詳細</h3>
+                <button class="close-btn" onclick="closeEmployeeDetailModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="employee-detail-grid">
+                    <div class="detail-section">
+                        <h4><i class="fas fa-user"></i> 基本情報</h4>
+                        <div class="detail-row">
+                            <span class="detail-label">氏名:</span>
+                            <span class="detail-value" id="emp-detail-name"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">フリガナ:</span>
+                            <span class="detail-value" id="emp-detail-furigana"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">役職:</span>
+                            <span class="detail-value" id="emp-detail-position"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">雇用形態:</span>
+                            <span class="detail-value" id="emp-detail-employment-type"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">ステータス:</span>
+                            <span class="detail-value" id="emp-detail-status"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">入社日:</span>
+                            <span class="detail-value" id="emp-detail-hire-date"></span>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4><i class="fas fa-address-book"></i> 連絡先</h4>
+                        <div class="detail-row">
+                            <span class="detail-label">電話:</span>
+                            <span class="detail-value" id="emp-detail-phone"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">メール:</span>
+                            <span class="detail-value" id="emp-detail-email"></span>
+                        </div>
+                    </div>
+                    <div class="detail-section" id="emp-detail-qualifications-section">
+                        <h4><i class="fas fa-certificate"></i> 資格情報</h4>
+                        <p id="emp-detail-qualifications"></p>
+                    </div>
+                    <div class="detail-section" id="emp-detail-notes-section">
+                        <h4><i class="fas fa-sticky-note"></i> 備考</h4>
+                        <p id="emp-detail-notes"></p>
+                    </div>
+                    <div class="detail-section" id="emp-detail-shifts-section">
+                        <h4><i class="fas fa-calendar-alt"></i> 今月のシフト</h4>
+                        <div id="emp-detail-shifts"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEmployeeDetailModal()">閉じる</button>
+                <button class="btn btn-primary" id="emp-detail-edit-btn">
+                    <i class="fas fa-edit"></i> 編集
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/medicine-panel.js"></script>
+    <script src="js/dashboard-customize.js"></script>
+</body>
+</html>
