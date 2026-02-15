@@ -1,12 +1,17 @@
 // ========================================
-// API ベースのデータストレージ層
-// サーバーサイドSQLiteと通信し、全端末でデータを共有
-// サーバー未接続時はlocalStorageにフォールバック
+// データストレージ層
+// 3つのモード:
+//   1. Googleスプレッドシート連携モード（GAS Web App経由）
+//   2. サーバーモード（Express + SQLite）
+//   3. ローカルストレージモード（フォールバック）
 // ========================================
 
 const DataStorage = {
     // APIベースURL
     API_BASE: '/api',
+
+    // 接続モード: 'sheets' | 'server' | 'local'
+    _mode: null,
 
     // サーバー接続状態
     _serverAvailable: null,
@@ -19,9 +24,91 @@ const DataStorage = {
         employees: 'pharmacy_employees'
     },
 
+    // フィールド名マッピング（ローカル ↔ スプレッドシート）
+    FIELD_MAP_TO_SHEETS: {
+        generic_name: 'genericName',
+        sales_status: 'salesStatus',
+        discontinuation_date: 'discontinuationDate',
+        alternative_medicine: 'alternative',
+        supply_info: 'supplyInfo',
+        is_favorite: 'isFavorite',
+        created_at: 'createdAt',
+        updated_at: 'updatedAt',
+        staff_name: 'employeeName',
+        shift_type: 'type',
+        start_time: 'startTime',
+        end_time: 'endTime',
+        hire_date: 'hireDate',
+        employment_type: 'employmentType'
+    },
+
+    FIELD_MAP_FROM_SHEETS: {},
+
+    // 初期化時にリバースマップを構築
+    _buildReverseMap() {
+        for (const [local, sheets] of Object.entries(this.FIELD_MAP_TO_SHEETS)) {
+            this.FIELD_MAP_FROM_SHEETS[sheets] = local;
+        }
+    },
+
+    // ローカル形式 → スプレッドシート形式に変換
+    _toSheetsFormat(record) {
+        const converted = {};
+        for (const [key, value] of Object.entries(record)) {
+            const sheetsKey = this.FIELD_MAP_TO_SHEETS[key] || key;
+            converted[sheetsKey] = value;
+        }
+        return converted;
+    },
+
+    // スプレッドシート形式 → ローカル形式に変換
+    _fromSheetsFormat(record) {
+        const converted = {};
+        // 時間のみのフィールド（スプレッドシート側のキー名）
+        const timeOnlyFields = ['startTime', 'endTime'];
+        for (const [key, value] of Object.entries(record)) {
+            const localKey = this.FIELD_MAP_FROM_SHEETS[key] || key;
+            let val = value;
+            // 時間フィールドの1899年ベースISO形式をHH:mmに変換
+            if (timeOnlyFields.includes(key) && typeof val === 'string') {
+                const match1899 = val.match(/^1899-12-\d{2}T(\d{2}):(\d{2})/);
+                if (match1899) {
+                    val = match1899[1] + ':' + match1899[2];
+                } else {
+                    const matchISO = val.match(/^\d{4}-\d{2}-\d{2}T(\d{2}):(\d{2})/);
+                    if (matchISO && !/^\d{2}:\d{2}$/.test(val)) {
+                        val = matchISO[1] + ':' + matchISO[2];
+                    }
+                }
+            }
+            converted[localKey] = val;
+        }
+        return converted;
+    },
+
     // UUID生成
     generateId() {
         return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    },
+
+    // 現在のモードを取得
+    getMode() {
+        return this._mode || 'local';
+    },
+
+    // モード表示名
+    getModeName() {
+        switch (this._mode) {
+            case 'sheets': return 'Googleスプレッドシート連携';
+            case 'server': return '共有データベース';
+            default: return 'ローカルストレージ';
+        }
+    },
+
+    // Googleスプレッドシート接続チェック
+    async checkSheets() {
+        if (typeof SheetsAPI === 'undefined') return false;
+        return SheetsAPI.isConnected();
     },
 
     // サーバー接続チェック
@@ -32,11 +119,6 @@ const DataStorage = {
             this._serverAvailable = res.ok;
         } catch (e) {
             this._serverAvailable = false;
-        }
-        if (this._serverAvailable) {
-            console.log('サーバー接続: OK（共有データベースモード）');
-        } else {
-            console.log('サーバー接続: 不可（ローカルストレージモード）');
         }
         return this._serverAvailable;
     },
@@ -70,20 +152,16 @@ const DataStorage = {
 
     // ========================================
     // 統一API（同期 - 既存コードとの互換性維持）
-    // サーバーモード時はキャッシュから返し、バックグラウンドで同期
     // ========================================
 
     // 内部キャッシュ
     _cache: {},
-    _cacheReady: {},
 
     // データ取得（同期 - キャッシュから返す）
     getAll(tableName) {
-        // キャッシュがあればキャッシュから返す
         if (this._cache[tableName]) {
             return [...this._cache[tableName]];
         }
-        // フォールバック: localStorageから
         const local = this._localGetAll(tableName);
         this._cache[tableName] = local;
         return [...local];
@@ -95,7 +173,7 @@ const DataStorage = {
         return all.find(item => item.id === id) || null;
     },
 
-    // レコード追加（同期 + バックグラウンドAPI）
+    // レコード追加（同期 + バックグラウンド同期）
     create(tableName, record) {
         const all = this.getAll(tableName);
         record.id = this.generateId();
@@ -105,12 +183,12 @@ const DataStorage = {
         this._cache[tableName] = all;
         this._localSaveAll(tableName, all);
 
-        // バックグラウンドでサーバーに同期
+        // バックグラウンドで同期
         this._syncCreate(tableName, record);
         return record;
     },
 
-    // レコード更新（同期 + バックグラウンドAPI）
+    // レコード更新（同期 + バックグラウンド同期）
     update(tableName, id, updates) {
         const all = this.getAll(tableName);
         const index = all.findIndex(item => item.id === id);
@@ -119,12 +197,12 @@ const DataStorage = {
         this._cache[tableName] = all;
         this._localSaveAll(tableName, all);
 
-        // バックグラウンドでサーバーに同期
+        // バックグラウンドで同期
         this._syncUpdate(tableName, id, updates);
         return all[index];
     },
 
-    // レコード削除（同期 + バックグラウンドAPI）
+    // レコード削除（同期 + バックグラウンド同期）
     delete(tableName, id) {
         const all = this.getAll(tableName);
         const filtered = all.filter(item => item.id !== id);
@@ -132,63 +210,98 @@ const DataStorage = {
         this._cache[tableName] = filtered;
         this._localSaveAll(tableName, filtered);
 
-        // バックグラウンドでサーバーに同期
+        // バックグラウンドで同期
         this._syncDelete(tableName, id);
         return true;
     },
 
     // ========================================
-    // バックグラウンド同期メソッド
+    // バックグラウンド同期メソッド（モード別）
     // ========================================
     async _syncCreate(tableName, record) {
-        if (!this._serverAvailable) return;
-        try {
-            await fetch(`${this.API_BASE}/${tableName}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(record)
-            });
-        } catch (e) {
-            console.warn(`サーバー同期エラー (create ${tableName}):`, e);
+        if (this._mode === 'sheets') {
+            try {
+                const sheetsRecord = this._toSheetsFormat(record);
+                await SheetsAPI.create(tableName, sheetsRecord);
+            } catch (e) {
+                console.warn(`スプレッドシート同期エラー (create ${tableName}):`, e);
+            }
+        } else if (this._mode === 'server') {
+            try {
+                await fetch(`${this.API_BASE}/${tableName}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(record)
+                });
+            } catch (e) {
+                console.warn(`サーバー同期エラー (create ${tableName}):`, e);
+            }
         }
     },
 
     async _syncUpdate(tableName, id, updates) {
-        if (!this._serverAvailable) return;
-        try {
-            await fetch(`${this.API_BASE}/${tableName}/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updates)
-            });
-        } catch (e) {
-            console.warn(`サーバー同期エラー (update ${tableName}):`, e);
+        if (this._mode === 'sheets') {
+            try {
+                const sheetsUpdates = this._toSheetsFormat(updates);
+                await SheetsAPI.update(tableName, id, sheetsUpdates);
+            } catch (e) {
+                console.warn(`スプレッドシート同期エラー (update ${tableName}):`, e);
+            }
+        } else if (this._mode === 'server') {
+            try {
+                await fetch(`${this.API_BASE}/${tableName}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updates)
+                });
+            } catch (e) {
+                console.warn(`サーバー同期エラー (update ${tableName}):`, e);
+            }
         }
     },
 
     async _syncDelete(tableName, id) {
-        if (!this._serverAvailable) return;
-        try {
-            await fetch(`${this.API_BASE}/${tableName}/${id}`, {
-                method: 'DELETE'
-            });
-        } catch (e) {
-            console.warn(`サーバー同期エラー (delete ${tableName}):`, e);
+        if (this._mode === 'sheets') {
+            try {
+                await SheetsAPI.remove(tableName, id);
+            } catch (e) {
+                console.warn(`スプレッドシート同期エラー (delete ${tableName}):`, e);
+            }
+        } else if (this._mode === 'server') {
+            try {
+                await fetch(`${this.API_BASE}/${tableName}/${id}`, {
+                    method: 'DELETE'
+                });
+            } catch (e) {
+                console.warn(`サーバー同期エラー (delete ${tableName}):`, e);
+            }
         }
     },
 
     // ========================================
-    // サーバーからの初期データロード
+    // Googleスプレッドシートからのデータロード
+    // ========================================
+    async loadFromSheets() {
+        const tables = ['announcements', 'shifts', 'medicines', 'employees'];
+        for (const table of tables) {
+            try {
+                const data = await SheetsAPI.readAll(table);
+                // スプレッドシート形式 → ローカル形式に変換
+                const localData = data.map(record => this._fromSheetsFormat(record));
+                this._cache[table] = localData;
+                this._localSaveAll(table, localData);
+            } catch (e) {
+                console.warn(`スプレッドシートデータ取得エラー (${table}):`, e);
+                this._cache[table] = this._localGetAll(table);
+            }
+        }
+        console.log('Googleスプレッドシートからデータをロードしました。');
+    },
+
+    // ========================================
+    // サーバーからのデータロード
     // ========================================
     async loadFromServer() {
-        const isAvailable = await this.checkServer();
-        if (!isAvailable) {
-            // サーバー不可の場合、ローカルにサンプルデータを投入
-            this.initSampleData();
-            return;
-        }
-
-        // サーバーから全テーブルのデータを取得してキャッシュに保存
         const tables = ['announcements', 'shifts', 'medicines', 'employees'];
         for (const table of tables) {
             try {
@@ -196,17 +309,39 @@ const DataStorage = {
                 if (res.ok) {
                     const data = await res.json();
                     this._cache[table] = data;
-                    // ローカルにもバックアップ保存
                     this._localSaveAll(table, data);
                 }
             } catch (e) {
                 console.warn(`サーバーデータ取得エラー (${table}):`, e);
-                // フォールバック: ローカルから
                 this._cache[table] = this._localGetAll(table);
             }
         }
-
         console.log('サーバーからデータをロードしました。');
+    },
+
+    // ========================================
+    // ローカルデータをスプレッドシートにエクスポート
+    // ========================================
+    async exportToSheets() {
+        if (!(await this.checkSheets())) {
+            throw new Error('スプレッドシートに接続されていません');
+        }
+
+        const tables = ['medicines', 'announcements', 'shifts', 'employees'];
+        const results = {};
+
+        for (const table of tables) {
+            try {
+                const localData = this.getAll(table);
+                const sheetsData = localData.map(record => this._toSheetsFormat(record));
+                const result = await SheetsAPI.clearAndImport(table, sheetsData);
+                results[table] = { success: true, count: result.count };
+            } catch (e) {
+                results[table] = { success: false, error: e.message };
+            }
+        }
+
+        return results;
     },
 
     // ========================================
@@ -216,23 +351,30 @@ const DataStorage = {
 
     startAutoSync(intervalMs = 30000) {
         if (this._syncInterval) clearInterval(this._syncInterval);
-        if (!this._serverAvailable) return;
+        if (this._mode === 'local') return;
 
         this._syncInterval = setInterval(async () => {
             const tables = ['announcements', 'shifts', 'medicines', 'employees'];
             for (const table of tables) {
                 try {
-                    const res = await fetch(`${this.API_BASE}/${table}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        const oldData = JSON.stringify(this._cache[table] || []);
-                        const newData = JSON.stringify(data);
-                        if (oldData !== newData) {
-                            this._cache[table] = data;
-                            this._localSaveAll(table, data);
-                            // データ変更イベントを発火
-                            window.dispatchEvent(new CustomEvent('dataSync', { detail: { table } }));
-                        }
+                    let newData;
+                    if (this._mode === 'sheets') {
+                        const sheetsData = await SheetsAPI.readAll(table);
+                        newData = sheetsData.map(record => this._fromSheetsFormat(record));
+                    } else if (this._mode === 'server') {
+                        const res = await fetch(`${this.API_BASE}/${table}`);
+                        if (!res.ok) continue;
+                        newData = await res.json();
+                    } else {
+                        continue;
+                    }
+
+                    const oldData = JSON.stringify(this._cache[table] || []);
+                    const newDataStr = JSON.stringify(newData);
+                    if (oldData !== newDataStr) {
+                        this._cache[table] = newData;
+                        this._localSaveAll(table, newData);
+                        window.dispatchEvent(new CustomEvent('dataSync', { detail: { table } }));
                     }
                 } catch (e) {
                     // 同期失敗は無視（次回リトライ）
@@ -240,7 +382,7 @@ const DataStorage = {
             }
         }, intervalMs);
 
-        console.log(`自動同期を開始しました（${intervalMs / 1000}秒間隔）`);
+        console.log(`自動同期を開始しました（${intervalMs / 1000}秒間隔、${this.getModeName()}）`);
     },
 
     stopAutoSync() {
@@ -251,7 +393,54 @@ const DataStorage = {
     },
 
     // ========================================
-    // ローカルサンプルデータ（サーバー不可時のフォールバック）
+    // スプレッドシート接続設定の変更
+    // ========================================
+    async connectToSheets(gasUrl) {
+        if (typeof SheetsAPI === 'undefined') {
+            throw new Error('SheetsAPI モジュールが読み込まれていません');
+        }
+
+        // 接続テスト
+        const result = await SheetsAPI.testConnection(gasUrl);
+        if (!result.success) {
+            throw new Error('接続テスト失敗: ' + (result.error || '不明なエラー'));
+        }
+
+        // 設定を保存
+        SheetsAPI.saveConfig({
+            gasUrl: gasUrl,
+            connected: true,
+            connectedAt: new Date().toISOString()
+        });
+
+        // モードを切り替え
+        this._mode = 'sheets';
+        this.stopAutoSync();
+
+        // スプレッドシートからデータをロード
+        await this.loadFromSheets();
+
+        // 自動同期を開始
+        this.startAutoSync(30000);
+
+        // UIを更新
+        window.dispatchEvent(new CustomEvent('storageModeChanged', { detail: { mode: 'sheets' } }));
+
+        return { success: true, message: 'Googleスプレッドシートに接続しました' };
+    },
+
+    // スプレッドシート接続を解除
+    disconnectSheets() {
+        if (typeof SheetsAPI !== 'undefined') {
+            SheetsAPI.clearConfig();
+        }
+        this._mode = 'local';
+        this.stopAutoSync();
+        window.dispatchEvent(new CustomEvent('storageModeChanged', { detail: { mode: 'local' } }));
+    },
+
+    // ========================================
+    // ローカルサンプルデータ（フォールバック用）
     // ========================================
     initSampleData() {
         // 薬剤サンプルデータ
@@ -280,7 +469,7 @@ const DataStorage = {
             const sampleEmployees = [
                 { name: '山田 太郎', furigana: 'やまだ たろう', position: '管理薬剤師', employment_type: '正社員', phone: '090-1234-5678', email: 'yamada@example.com', hire_date: '2015-04-01', status: '在籍', qualification: '', notes: '管理薬剤師兼務' },
                 { name: '佐藤 花子', furigana: 'さとう はなこ', position: '薬剤師', employment_type: '正社員', phone: '090-2345-6789', email: 'sato@example.com', hire_date: '2018-04-01', status: '在籍', qualification: '', notes: '' },
-                { name: '鈴木 一郎', furigana: 'すずき いちろう', position: '薬剤師', employment_type: 'パート', phone: '080-3456-7890', email: '', hire_date: '2020-10-01', status: '在籍', qualification: '', notes: '月・水・金勤務' },
+                { name: '鈴木 一郎', furigana: 'すずき いちろう', position: '薬剤師', employment_type: 'パート', phone: '090-3456-7890', email: 'suzuki@example.com', hire_date: '2020-10-01', status: '在籍', qualification: '', notes: '月水金勤務' },
                 { name: '田中 美咲', furigana: 'たなか みさき', position: '医療事務', employment_type: '正社員', phone: '090-4567-8901', email: 'tanaka@example.com', hire_date: '2021-04-01', status: '在籍', qualification: '', notes: '' }
             ];
             sampleEmployees.forEach(emp => {
@@ -349,18 +538,45 @@ const DataStorage = {
 };
 
 // ========================================
-// 初期化: サーバー接続を確認し、データをロード
+// 初期化
 // ========================================
 (async function() {
-    await DataStorage.loadFromServer();
-    // サーバー接続時は30秒間隔で自動同期
+    // リバースマップを構築
+    DataStorage._buildReverseMap();
+
+    // 1. Googleスプレッドシート接続を確認
+    if (typeof SheetsAPI !== 'undefined' && SheetsAPI.isConnected()) {
+        DataStorage._mode = 'sheets';
+        console.log('接続モード: Googleスプレッドシート連携');
+        try {
+            await DataStorage.loadFromSheets();
+        } catch (e) {
+            console.warn('スプレッドシートからのロードに失敗。ローカルにフォールバック:', e);
+            DataStorage._mode = 'local';
+            DataStorage.initSampleData();
+        }
+    }
+    // 2. サーバー接続を確認
+    else {
+        const serverOk = await DataStorage.checkServer();
+        if (serverOk) {
+            DataStorage._mode = 'server';
+            console.log('接続モード: 共有データベース（サーバー）');
+            await DataStorage.loadFromServer();
+        } else {
+            DataStorage._mode = 'local';
+            console.log('接続モード: ローカルストレージ');
+            DataStorage.initSampleData();
+        }
+    }
+
+    // 自動同期を開始（ローカルモード以外）
     DataStorage.startAutoSync(30000);
 
     // データ同期イベントでUIを更新
     window.addEventListener('dataSync', (e) => {
         const table = e.detail.table;
         console.log(`データ同期: ${table} が更新されました`);
-        // 各セクションの再描画をトリガー
         if (typeof refreshCurrentSection === 'function') {
             refreshCurrentSection(table);
         }
@@ -369,7 +585,7 @@ const DataStorage = {
     // データストレージ初期化完了を通知
     DataStorage._ready = true;
     window.dispatchEvent(new CustomEvent('storageReady'));
-    console.log('データストレージ初期化完了');
+    console.log(`データストレージ初期化完了（${DataStorage.getModeName()}）`);
 })();
 
 // グローバルに公開

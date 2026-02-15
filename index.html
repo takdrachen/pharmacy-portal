@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/shift-presets.css">
     <link rel="stylesheet" href="css/medicine-panel.css">
+    <link rel="stylesheet" href="css/settings.css">
 </head>
 <body>
     <!-- ヘッダー -->
@@ -48,6 +49,10 @@
                 <button class="nav-btn" data-section="ai-chat">
                     <i class="fas fa-robot"></i>
                     <span>AIアシスタント</span>
+                </button>
+                <button class="nav-btn" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>設定</span>
                 </button>
             </nav>
         </div>
@@ -543,6 +548,119 @@
                 </div>
             </div>
         </section>
+
+        <!-- 設定セクション -->
+        <section id="settings-section" class="content-section">
+            <div class="section-header">
+                <h2><i class="fas fa-cog"></i> 設定</h2>
+            </div>
+
+            <!-- 接続ステータス -->
+            <div class="settings-card">
+                <div class="settings-card-header">
+                    <h3><i class="fas fa-database"></i> データ接続ステータス</h3>
+                </div>
+                <div class="settings-card-body">
+                    <div class="connection-status" id="connection-status">
+                        <div class="status-indicator">
+                            <span class="status-dot" id="status-dot"></span>
+                            <span class="status-text" id="status-text">確認中...</span>
+                        </div>
+                        <div class="status-mode" id="status-mode"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Googleスプレッドシート連携 -->
+            <div class="settings-card">
+                <div class="settings-card-header">
+                    <h3><i class="fab fa-google"></i> Googleスプレッドシート連携</h3>
+                </div>
+                <div class="settings-card-body">
+                    <p class="settings-description">
+                        Googleスプレッドシートと連携することで、複数の端末から同じデータにアクセスできます。
+                        データはGoogleスプレッドシートに保存され、自動的に同期されます。
+                    </p>
+
+                    <div class="form-group">
+                        <label for="gas-url-input">Google Apps Script Web App URL</label>
+                        <input type="url" id="gas-url-input" class="form-control" 
+                               placeholder="https://script.google.com/macros/s/xxxxx/exec" 
+                               autocomplete="off">
+                        <small class="form-help">スプレッドシートのApps ScriptをWebアプリとしてデプロイした際のURLを入力してください。</small>
+                    </div>
+
+                    <div class="settings-actions">
+                        <button type="button" class="btn btn-primary" id="btn-connect-sheets" onclick="connectToSheets()">
+                            <i class="fas fa-link"></i> 接続テスト・接続
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="btn-disconnect-sheets" onclick="disconnectSheets()" style="display:none;">
+                            <i class="fas fa-unlink"></i> 接続解除
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="btn-init-sheets" onclick="initializeSheets()" style="display:none;">
+                            <i class="fas fa-magic"></i> シート初期化
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="btn-export-sheets" onclick="exportToSheets()" style="display:none;">
+                            <i class="fas fa-upload"></i> ローカルデータをエクスポート
+                        </button>
+                    </div>
+
+                    <div id="sheets-connection-log" class="connection-log" style="display:none;">
+                        <h4>接続ログ</h4>
+                        <pre id="sheets-log-content"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- セットアップガイド -->
+            <div class="settings-card">
+                <div class="settings-card-header">
+                    <h3><i class="fas fa-book"></i> セットアップガイド</h3>
+                </div>
+                <div class="settings-card-body">
+                    <div class="setup-guide">
+                        <div class="guide-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Googleスプレッドシートを新規作成</h4>
+                                <p><a href="https://sheets.new" target="_blank">sheets.new</a> を開いて新しいスプレッドシートを作成します。</p>
+                            </div>
+                        </div>
+                        <div class="guide-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Apps Scriptを開く</h4>
+                                <p>スプレッドシートのメニューから「拡張機能」→「Apps Script」を選択します。</p>
+                            </div>
+                        </div>
+                        <div class="guide-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>コードを貼り付け</h4>
+                                <p>下の「コードをコピー」ボタンでApps Script用コードをコピーし、エディタに貼り付けて保存します。</p>
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="copyGasCode()">
+                                    <i class="fas fa-copy"></i> コードをコピー
+                                </button>
+                            </div>
+                        </div>
+                        <div class="guide-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>Webアプリとしてデプロイ</h4>
+                                <p>Apps Scriptエディタで「デプロイ」→「新しいデプロイ」を選択。種類は「ウェブアプリ」、アクセスできるユーザーは「全員」を選択してデプロイします。</p>
+                            </div>
+                        </div>
+                        <div class="guide-step">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <h4>URLを貼り付けて接続</h4>
+                                <p>デプロイ後に表示されるURLを上の入力欄に貼り付け、「接続テスト・接続」ボタンをクリックします。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- モーダル: お知らせ追加/編集 -->
@@ -917,9 +1035,11 @@
         </div>
     </div>
 
+    <script src="js/sheets-api.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/main.js"></script>
     <script src="js/medicine-panel.js"></script>
     <script src="js/dashboard-customize.js"></script>
+    <script src="js/settings.js"></script>
 </body>
 </html>
