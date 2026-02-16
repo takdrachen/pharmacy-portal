@@ -227,19 +227,27 @@ function updateDashboard() {
         }).join('');
     }
     
-    // 要注意薬剤（出荷調整中・販売中止）
-    const alertMedicines = medicines.filter(m => m.sales_status === '出荷調整中' || m.sales_status === '販売中止');
-    const alertMedEl = document.getElementById('dash-alert-medicines');
-    if (alertMedicines.length === 0) {
-        alertMedEl.innerHTML = '<div class="dash-empty"><i class="fas fa-check-circle"></i>要注意薬剤はありません</div>';
+    // 最新の薬剤5件（登録日時の新しい順）
+    const recentMedicines = [...medicines].sort((a, b) => {
+        const dateA = a.created_at ? new Date(a.created_at) : (a.id ? new Date(parseInt(a.id)) : new Date(0));
+        const dateB = b.created_at ? new Date(b.created_at) : (b.id ? new Date(parseInt(b.id)) : new Date(0));
+        return dateB - dateA;
+    }).slice(0, 5);
+    const recentMedEl = document.getElementById('dash-recent-medicines');
+    if (recentMedicines.length === 0) {
+        recentMedEl.innerHTML = '<div class="dash-empty"><i class="fas fa-pills"></i>登録された薬剤はありません</div>';
     } else {
-        alertMedEl.innerHTML = alertMedicines.map(m => {
-            const altText = m.alternative_medicine ? `→ ${m.alternative_medicine}` : '';
+        recentMedEl.innerHTML = recentMedicines.map(m => {
+            let statusClass = '';
+            if (m.sales_status === 'その他') statusClass = 'status-その他';
+            else if (m.sales_status === '販売中止') statusClass = 'status-販売中止';
+            else if (m.sales_status === '出荷調整中') statusClass = 'status-出荷調整中';
+            else if (m.sales_status === '新規採用') statusClass = 'status-新規採用';
             return `
                 <div class="dash-medicine-item">
-                    <span class="dash-medicine-status status-${m.sales_status}">${m.sales_status}</span>
+                    <span class="dash-medicine-status ${statusClass}">${m.sales_status || 'その他'}</span>
                     <span class="dash-medicine-name">${escapeHtml(m.name)}</span>
-                    ${altText ? `<span class="dash-medicine-alt"><i class="fas fa-arrow-right"></i> ${escapeHtml(m.alternative_medicine)}</span>` : ''}
+                    <span class="dash-medicine-category">${m.category || ''}</span>
                 </div>
             `;
         }).join('');

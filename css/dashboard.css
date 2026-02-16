@@ -191,7 +191,7 @@
     margin-left: auto;
 }
 
-/* ダッシュボード内の要注意薬剤 */
+/* ダッシュボード内の最新薬剤 */
 .dash-medicine-item {
     display: flex;
     align-items: center;
@@ -232,12 +232,19 @@
     white-space: nowrap;
 }
 
-.dash-medicine-alt {
+.dash-medicine-status.status-その他 {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.dash-medicine-status.status-新規採用 {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.dash-medicine-category {
     font-size: var(--font-size-xs);
     color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 4px;
     flex-shrink: 0;
 }
 

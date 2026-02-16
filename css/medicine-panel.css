@@ -278,6 +278,7 @@
     border: 1px solid var(--color-divider);
     max-height: calc(100vh - 400px);
     min-height: 400px;
+    width: 100%;
 }
 
 .medicine-grid-layout {
@@ -285,13 +286,17 @@
     grid-template-columns: 40px 2fr 1.5fr 1fr 1.2fr 1.5fr 2fr 100px;
     gap: 12px;
     align-items: start;
+    table-layout: fixed;
+    width: 100%;
 }
 
 .medicine-grid-layout > div {
     word-wrap: break-word;
-    word-break: break-word;
-    overflow-wrap: break-word;
+    word-break: break-all;
+    overflow-wrap: anywhere;
     white-space: normal;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .list-header {
@@ -314,8 +319,8 @@
     font-size: var(--font-size-sm);
     line-height: 1.5;
     word-wrap: break-word;
-    word-break: break-word;
-    overflow-wrap: break-word;
+    word-break: break-all;
+    overflow-wrap: anywhere;
     transition: all var(--transition-base);
 }
 
@@ -342,9 +347,11 @@
     font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
     word-wrap: break-word;
-    word-break: break-word;
-    overflow-wrap: break-word;
+    word-break: break-all;
+    overflow-wrap: anywhere;
     white-space: normal;
+    min-width: 0;
+    line-height: 1.4;
 }
 
 .col-status {
@@ -382,6 +389,11 @@
     border-radius: var(--radius-sm);
     display: inline-block;
     font-size: var(--font-size-xs);
+    word-wrap: break-word;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    max-width: 100%;
 }
 
 .action-cell {
@@ -536,6 +548,9 @@
     color: var(--text-secondary);
     padding-left: 26px;
     margin-top: -6px;
+    word-wrap: break-word;
+    word-break: break-all;
+    overflow-wrap: anywhere;
 }
 
 .medicine-card-badges {
@@ -565,6 +580,16 @@
     padding: 8px 10px;
     background: var(--color-surface);
     border-radius: var(--radius-sm);
+    word-wrap: break-word;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+}
+
+.medicine-card-info span {
+    min-width: 0;
+    word-wrap: break-word;
+    word-break: break-all;
+    overflow-wrap: anywhere;
 }
 
 .medicine-card-info i {
@@ -583,6 +608,9 @@
     line-height: 1.5;
     padding: 6px 0 0;
     border-top: 1px solid var(--color-divider);
+    word-wrap: break-word;
+    word-break: break-all;
+    overflow-wrap: anywhere;
 }
 
 /* ========== レスポンシブ ========== */
