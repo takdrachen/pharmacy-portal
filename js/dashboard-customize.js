@@ -2,7 +2,7 @@
 
 const DASHBOARD_WIDGETS = {
     'today-shifts': { name: '今日のシフト', icon: 'fas fa-calendar-day', defaultColumn: 'left', defaultOrder: 0 },
-    'recent-medicines': { name: '最新の薬剤', icon: 'fas fa-pills', defaultColumn: 'left', defaultOrder: 1 },
+    'recent-medicines': { name: 'お気に入り薬剤', icon: 'fas fa-star', defaultColumn: 'left', defaultOrder: 1 },
     'recent-announcements': { name: '最新のお知らせ', icon: 'fas fa-bullhorn', defaultColumn: 'right', defaultOrder: 0 },
     'quick-access': { name: 'クイックアクセス', icon: 'fas fa-bolt', defaultColumn: 'right', defaultOrder: 1 }
 };

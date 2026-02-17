@@ -44,8 +44,19 @@ window.addMedicine = function() {
     const name = document.getElementById('inMedicineName').value.trim();
     const genericName = document.getElementById('inMedicineGenericName').value.trim();
     const salesStatus = document.getElementById('inMedicineSalesStatus').value;
-    const salesStartDate = document.getElementById('inMedicineSalesStartDate').value.trim();
-    const discontinuationDate = document.getElementById('inMedicineDiscontinuationDate').value.trim();
+    // 販売期間フィールドの値を解析
+    const periodRaw = document.getElementById('inMedicineSalesStartDate').value.trim();
+    let salesStartDate = periodRaw;
+    let discontinuationDate = '';
+    if (periodRaw.includes('～')) {
+        const parts = periodRaw.split('～');
+        salesStartDate = parts[0].trim();
+        discontinuationDate = parts[1] ? parts[1].trim() : '';
+    } else if (periodRaw.includes('~')) {
+        const parts = periodRaw.split('~');
+        salesStartDate = parts[0].trim();
+        discontinuationDate = parts[1] ? parts[1].trim() : '';
+    }
     const alternative = document.getElementById('inMedicineAlternative').value.trim();
     const supplyInfo = document.getElementById('inMedicineSupplyInfo').value.trim();
     const notes = document.getElementById('inMedicineNotes').value.trim();
@@ -109,12 +120,12 @@ function getFilteredMedicines() {
 
     let data = [...window.medicinesData];
 
-    // 検索フィルター（薬剤名、一般名、代替薬品、備考）
+    // 検索フィルター（薬剤名、代替薬品、出荷調整、備考）
     if (searchText) {
         data = data.filter(item => 
             (item.name && item.name.toLowerCase().includes(searchText)) ||
-            (item.generic_name && item.generic_name.toLowerCase().includes(searchText)) ||
             (item.alternative_medicine && item.alternative_medicine.toLowerCase().includes(searchText)) ||
+            (item.supply_info && item.supply_info.toLowerCase().includes(searchText)) ||
             (item.notes && item.notes.toLowerCase().includes(searchText))
         );
     }
@@ -123,6 +134,13 @@ function getFilteredMedicines() {
     if (statusFilter) {
         data = data.filter(item => item.sales_status === statusFilter);
     }
+
+    // 新しいものから順にソート
+    data.sort((a, b) => {
+        const dateA = a.created_at ? new Date(a.created_at) : (a.id ? new Date(parseInt(a.id)) : new Date(0));
+        const dateB = b.created_at ? new Date(b.created_at) : (b.id ? new Date(parseInt(b.id)) : new Date(0));
+        return dateB - dateA;
+    });
 
     // フィルターサマリーの更新
     updateFilterSummary(searchText, statusFilter, data.length);
@@ -192,6 +210,18 @@ function renderTableView(data) {
         let rowClass = 'list-row medicine-grid-layout' + getRowClass(item.sales_status);
         let statusClass = 'col-status ' + getStatusClass(item.sales_status);
 
+        // 販売期間の統合表示
+        let periodText = '';
+        if (item.sales_start_date && item.discontinuation_date) {
+            periodText = escapeHtmlMed(item.sales_start_date) + ' ～ ' + escapeHtmlMed(item.discontinuation_date);
+        } else if (item.sales_start_date) {
+            periodText = escapeHtmlMed(item.sales_start_date);
+        } else if (item.discontinuation_date) {
+            periodText = '～ ' + escapeHtmlMed(item.discontinuation_date);
+        } else {
+            periodText = '-';
+        }
+
         return `
             <div class="${rowClass}">
                 <div style="text-align:center">
@@ -202,11 +232,10 @@ function renderTableView(data) {
                     </span>
                 </div>
                 <div class="col-medicine-name">${escapeHtmlMed(item.name)}</div>
-                <div class="col-generic-name">${escapeHtmlMed(item.generic_name) || '-'}</div>
                 <div><span class="${statusClass}">${item.sales_status}</span></div>
-                <div class="col-date">${escapeHtmlMed(item.sales_start_date) || '-'}</div>
-                <div class="col-date">${escapeHtmlMed(item.discontinuation_date) || '-'}</div>
+                <div class="col-date">${periodText}</div>
                 <div class="col-alternative">${escapeHtmlMed(item.alternative_medicine) || '-'}</div>
+                <div class="col-supply-info">${item.supply_info ? `<span class="col-supply-badge">${escapeHtmlMed(item.supply_info)}</span>` : '-'}</div>
                 <div class="col-notes-cell">${item.notes ? `<span class="col-note">${escapeHtmlMed(item.notes)}</span>` : ''}</div>
                 <div class="action-cell">
                     <button class="icon-btn btn-edit" onclick="editMedicine('${item.id}')" title="編集">✏️</button>
@@ -233,6 +262,16 @@ function renderCardView(data) {
         else if (item.sales_status === '出荷調整中') cardBorderClass = 'card-supply-issue';
         else if (item.sales_status === '新規採用') cardBorderClass = 'card-new';
 
+        // 販売期間の統合表示
+        let periodText = '';
+        if (item.sales_start_date && item.discontinuation_date) {
+            periodText = escapeHtmlMed(item.sales_start_date) + ' ～ ' + escapeHtmlMed(item.discontinuation_date);
+        } else if (item.sales_start_date) {
+            periodText = escapeHtmlMed(item.sales_start_date);
+        } else if (item.discontinuation_date) {
+            periodText = '～ ' + escapeHtmlMed(item.discontinuation_date);
+        }
+
         return `
             <div class="medicine-card ${cardBorderClass}">
                 <div class="medicine-card-header">
@@ -249,14 +288,12 @@ function renderCardView(data) {
                         <button class="icon-btn btn-delete" onclick="deleteMedicine('${item.id}')" title="削除"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
-                ${item.generic_name ? `<div class="medicine-card-generic">${escapeHtmlMed(item.generic_name)}</div>` : ''}
                 <div class="medicine-card-badges">
                     <span class="col-status ${statusClass}">${item.sales_status}</span>
                 </div>
-                ${(item.sales_start_date || item.discontinuation_date) ? `
+                ${periodText ? `
                 <div class="medicine-card-dates">
-                    ${item.sales_start_date ? `<span class="medicine-card-date"><i class="fas fa-play-circle"></i> 開始: ${escapeHtmlMed(item.sales_start_date)}</span>` : ''}
-                    ${item.discontinuation_date ? `<span class="medicine-card-date"><i class="fas fa-stop-circle"></i> 中止: ${escapeHtmlMed(item.discontinuation_date)}</span>` : ''}
+                    <span class="medicine-card-date"><i class="fas fa-calendar-alt"></i> ${periodText}</span>
                 </div>` : ''}
                 ${item.alternative_medicine ? `
                 <div class="medicine-card-info">

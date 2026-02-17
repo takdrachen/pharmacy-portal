@@ -164,7 +164,7 @@
                         <div class="dashboard-card-header">
                             <div class="card-header-left">
                                 <span class="drag-handle" title="ドラッグで並び替え"><i class="fas fa-grip-vertical"></i></span>
-                                <h3><i class="fas fa-pills"></i> 最新の薬剤</h3>
+                                <h3><i class="fas fa-star"></i> お気に入り薬剤</h3>
                             </div>
                             <button class="btn-link" onclick="switchSection('medicines')">すべて表示 <i class="fas fa-chevron-right"></i></button>
                         </div>
@@ -316,7 +316,7 @@
                     <h2><i class="fas fa-pills"></i> 薬剤情報管理</h2>
                 </div>
                 <div class="header-right">
-                    <input type="text" class="search-input" id="medicine-search-input" placeholder="薬剤名・一般名・備考で検索..." oninput="renderMedicineList()">
+                    <input type="text" class="search-input" id="medicine-search-input" placeholder="薬剤名・備考・出荷調整で検索..." oninput="renderMedicineList()">
 
                     <select id="medicine-status-filter" class="action-btn" onchange="renderMedicineList()">
                         <option value="">全販売状態</option>
@@ -355,10 +355,7 @@
                         <label>薬剤名 <span class="required">*</span></label>
                         <textarea id="inMedicineName" placeholder="薬剤名を入力" rows="1"></textarea>
                     </div>
-                    <div class="input-group">
-                        <label>一般名</label>
-                        <textarea id="inMedicineGenericName" placeholder="一般名" rows="1"></textarea>
-                    </div>
+                    <input type="hidden" id="inMedicineGenericName" value="">
 
                     <div class="input-group">
                         <label>販売状態 <span class="required">*</span></label>
@@ -370,13 +367,10 @@
                         </select>
                     </div>
                     <div class="input-group">
-                        <label>販売開始日</label>
-                        <input type="text" id="inMedicineSalesStartDate" placeholder="例: 2026年4月1日">
+                        <label>販売期間</label>
+                        <input type="text" id="inMedicineSalesStartDate" placeholder="例: 2026年4月～2026年12月">
                     </div>
-                    <div class="input-group">
-                        <label>販売中止日</label>
-                        <input type="text" id="inMedicineDiscontinuationDate" placeholder="例: 2026年3月31日">
-                    </div>
+                    <input type="hidden" id="inMedicineDiscontinuationDate" value="">
                     <div class="input-group">
                         <label>代替薬品名</label>
                         <textarea id="inMedicineAlternative" placeholder="代替薬品名" rows="1"></textarea>
@@ -404,11 +398,10 @@
                 <div class="list-header medicine-grid-layout">
                     <div style="text-align:center">★</div>
                     <div>薬剤名</div>
-                    <div>一般名</div>
                     <div>販売状態</div>
-                    <div>販売開始日</div>
-                    <div>販売中止日</div>
+                    <div>販売期間</div>
                     <div>代替薬品</div>
+                    <div>出荷調整</div>
                     <div>備考</div>
                     <div style="text-align:center">操作</div>
                 </div>
@@ -768,10 +761,7 @@
                     <label>薬剤名 <span class="required">*</span></label>
                     <input type="text" id="medicine-name" required>
                 </div>
-                <div class="form-group">
-                    <label>一般名</label>
-                    <input type="text" id="medicine-generic-name">
-                </div>
+                <input type="hidden" id="medicine-generic-name">
 
                 <div class="form-group">
                     <label>販売状態 <span class="required">*</span></label>
@@ -784,13 +774,10 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>販売開始日</label>
-                    <input type="text" id="medicine-sales-start-date" placeholder="例: 2026年4月1日">
+                    <label>販売期間</label>
+                    <input type="text" id="medicine-sales-start-date" placeholder="例: 2026年4月～2026年12月">
                 </div>
-                <div class="form-group">
-                    <label>販売中止日</label>
-                    <input type="text" id="medicine-discontinuation-date" placeholder="例: 2026年3月31日">
-                </div>
+                <input type="hidden" id="medicine-discontinuation-date">
                 <div class="form-group">
                     <label>代替薬品名</label>
                     <input type="text" id="medicine-alternative" placeholder="販売中止後の代替薬品名">
@@ -829,20 +816,12 @@
             <div class="medicine-detail-content">
                 <div class="detail-section">
                     <div class="detail-row">
-                        <strong>一般名:</strong>
-                        <span id="medicine-detail-generic-name"></span>
-                    </div>
-                    <div class="detail-row">
                         <strong>販売状態:</strong>
                         <span id="medicine-detail-sales-status" class="badge"></span>
                     </div>
-                    <div class="detail-row" id="medicine-detail-sales-start-row" style="display: none;">
-                        <strong>販売開始日:</strong>
-                        <span id="medicine-detail-sales-start-date"></span>
-                    </div>
-                    <div class="detail-row" id="medicine-detail-discontinuation-row" style="display: none;">
-                        <strong>販売中止日:</strong>
-                        <span id="medicine-detail-discontinuation-date"></span>
+                    <div class="detail-row" id="medicine-detail-sales-period-row" style="display: none;">
+                        <strong>販売期間:</strong>
+                        <span id="medicine-detail-sales-period"></span>
                     </div>
                     <div class="detail-row" id="medicine-detail-alternative-row" style="display: none;">
                         <strong>代替薬品:</strong>

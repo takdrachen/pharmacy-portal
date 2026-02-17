@@ -185,12 +185,16 @@ window.refreshCurrentSection = refreshCurrentSection;
 // ========== ダッシュボード機能 ==========
 
 function updateDashboard() {
-    // 日付表示
+    // 日付表示（JST）
     const now = new Date();
-    const days = ['日', '月', '火', '水', '木', '金', '土'];
+    const jstOptions = { timeZone: 'Asia/Tokyo' };
+    const jstYear = now.toLocaleString('ja-JP', { ...jstOptions, year: 'numeric' }).replace('年', '');
+    const jstMonth = now.toLocaleString('ja-JP', { ...jstOptions, month: 'numeric' }).replace('月', '');
+    const jstDate = now.toLocaleString('ja-JP', { ...jstOptions, day: 'numeric' }).replace('日', '');
+    const jstDay = now.toLocaleString('ja-JP', { ...jstOptions, weekday: 'short' });
     const dateEl = document.getElementById('dashboard-date');
     if (dateEl) {
-        dateEl.textContent = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日（${days[now.getDay()]}）`;
+        dateEl.textContent = `${jstYear}年${jstMonth}月${jstDate}日（${jstDay}）`;
     }
     
     // サマリーカード
@@ -227,17 +231,19 @@ function updateDashboard() {
         }).join('');
     }
     
-    // 最新の薬剤5件（登録日時の新しい順）
-    const recentMedicines = [...medicines].sort((a, b) => {
-        const dateA = a.created_at ? new Date(a.created_at) : (a.id ? new Date(parseInt(a.id)) : new Date(0));
-        const dateB = b.created_at ? new Date(b.created_at) : (b.id ? new Date(parseInt(b.id)) : new Date(0));
-        return dateB - dateA;
-    }).slice(0, 5);
+    // お気に入り薬剤のみ表示（10件まで、新しい順）
+    const favoriteMedicines = [...medicines]
+        .filter(m => m.is_favorite)
+        .sort((a, b) => {
+            const dateA = a.created_at ? new Date(a.created_at) : (a.id ? new Date(parseInt(a.id)) : new Date(0));
+            const dateB = b.created_at ? new Date(b.created_at) : (b.id ? new Date(parseInt(b.id)) : new Date(0));
+            return dateB - dateA;
+        }).slice(0, 10);
     const recentMedEl = document.getElementById('dash-recent-medicines');
-    if (recentMedicines.length === 0) {
-        recentMedEl.innerHTML = '<div class="dash-empty"><i class="fas fa-pills"></i>登録された薬剤はありません</div>';
+    if (favoriteMedicines.length === 0) {
+        recentMedEl.innerHTML = '<div class="dash-empty"><i class="fas fa-star"></i>お気に入り薬剤はありません<br><small>薬剤情報の☆をクリックして追加できます</small></div>';
     } else {
-        recentMedEl.innerHTML = recentMedicines.map(m => {
+        recentMedEl.innerHTML = favoriteMedicines.map(m => {
             let statusClass = '';
             if (m.sales_status === 'その他') statusClass = 'status-その他';
             else if (m.sales_status === '販売中止') statusClass = 'status-販売中止';
@@ -260,7 +266,9 @@ function updateDashboard() {
     } else {
         announcementsEl.innerHTML = recentAnnouncements.map(a => {
             const date = new Date(a.date);
-            const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+            const jstM = date.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', month: 'numeric' }).replace('月', '');
+            const jstD = date.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', day: 'numeric' }).replace('日', '');
+            const dateStr = `${jstM}/${jstD}`;
             const excerpt = a.content ? (a.content.length > 60 ? a.content.substring(0, 60) + '...' : a.content) : '';
             return `
                 <div class="dash-announcement-item" onclick="switchSection('announcements')">
@@ -867,10 +875,12 @@ function openMedicineModal(medicine = null) {
         title.textContent = '薬剤情報編集';
         document.getElementById('medicine-id').value = medicine.id;
         document.getElementById('medicine-name').value = medicine.name;
-        document.getElementById('medicine-generic-name').value = medicine.generic_name || '';
+        document.getElementById('medicine-generic-name').value = medicine.generic_name || ''; // hidden field - 互換性維持
         document.getElementById('medicine-sales-status').value = medicine.sales_status || 'その他';
-        document.getElementById('medicine-sales-start-date').value = medicine.sales_start_date || '';
-        document.getElementById('medicine-discontinuation-date').value = medicine.discontinuation_date || '';
+        // 販売期間の統合表示
+        const periodVal = [medicine.sales_start_date, medicine.discontinuation_date].filter(Boolean).join('～');
+        document.getElementById('medicine-sales-start-date').value = periodVal || '';
+        document.getElementById('medicine-discontinuation-date').value = '';
         document.getElementById('medicine-alternative').value = medicine.alternative_medicine || '';
         document.getElementById('medicine-supply-info').value = medicine.supply_info || '';
         document.getElementById('medicine-notes').value = medicine.notes || '';
@@ -892,12 +902,25 @@ function closeMedicineModal() {
 }
 
 function saveMedicine() {
+    // 販売期間フィールドの値を解析
+    const periodRaw = document.getElementById('medicine-sales-start-date').value.trim();
+    let salesStartDate = periodRaw;
+    let discontinuationDate = '';
+    if (periodRaw.includes('～')) {
+        const parts = periodRaw.split('～');
+        salesStartDate = parts[0].trim();
+        discontinuationDate = parts[1] ? parts[1].trim() : '';
+    } else if (periodRaw.includes('~')) {
+        const parts = periodRaw.split('~');
+        salesStartDate = parts[0].trim();
+        discontinuationDate = parts[1] ? parts[1].trim() : '';
+    }
     const data = {
         name: document.getElementById('medicine-name').value,
         generic_name: document.getElementById('medicine-generic-name').value,
         sales_status: document.getElementById('medicine-sales-status').value,
-        sales_start_date: document.getElementById('medicine-sales-start-date').value,
-        discontinuation_date: document.getElementById('medicine-discontinuation-date').value,
+        sales_start_date: salesStartDate,
+        discontinuation_date: discontinuationDate,
         alternative_medicine: document.getElementById('medicine-alternative').value,
         supply_info: document.getElementById('medicine-supply-info').value,
         notes: document.getElementById('medicine-notes').value,
@@ -929,7 +952,6 @@ function showMedicineDetail(id) {
     }
     
     document.getElementById('medicine-detail-name').textContent = medicine.name;
-    document.getElementById('medicine-detail-generic-name').textContent = medicine.generic_name || '-';
     
     // 販売状態の表示
     const statusBadge = document.getElementById('medicine-detail-sales-status');
@@ -940,22 +962,19 @@ function showMedicineDetail(id) {
     statusBadge.className = `badge ${statusClass}`;
     statusBadge.textContent = medicine.sales_status || 'その他';
     
-    // 販売開始日の表示
-    const salesStartRow = document.getElementById('medicine-detail-sales-start-row');
-    if (medicine.sales_start_date) {
-        document.getElementById('medicine-detail-sales-start-date').textContent = medicine.sales_start_date;
-        salesStartRow.style.display = 'grid';
-    } else {
-        salesStartRow.style.display = 'none';
-    }
-    
-    // 販売中止日の表示
-    const discontinuationRow = document.getElementById('medicine-detail-discontinuation-row');
+    // 販売期間の表示（統合）
+    const salesPeriodRow = document.getElementById('medicine-detail-sales-period-row');
+    const periodParts = [];
+    if (medicine.sales_start_date) periodParts.push(medicine.sales_start_date);
     if (medicine.discontinuation_date) {
-        document.getElementById('medicine-detail-discontinuation-date').textContent = medicine.discontinuation_date;
-        discontinuationRow.style.display = 'grid';
+        if (periodParts.length > 0) periodParts.push(' ～ ');
+        periodParts.push(medicine.discontinuation_date);
+    }
+    if (periodParts.length > 0) {
+        document.getElementById('medicine-detail-sales-period').textContent = periodParts.join('');
+        salesPeriodRow.style.display = 'grid';
     } else {
-        discontinuationRow.style.display = 'none';
+        salesPeriodRow.style.display = 'none';
     }
     
     // 代替薬品の表示
@@ -1333,16 +1352,20 @@ window.closeEmployeeDetailModal = function() {
 // ========== ユーティリティ関数 ==========
 
 function formatDate(date) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
+    // JSTで日付をフォーマット
+    const jst = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+    const y = jst.getFullYear();
+    const m = String(jst.getMonth() + 1).padStart(2, '0');
+    const d = String(jst.getDate()).padStart(2, '0');
     return `${y}/${m}/${d}`;
 }
 
 function formatDateISO(date) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
+    // JSTで日付をフォーマット
+    const jst = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+    const y = jst.getFullYear();
+    const m = String(jst.getMonth() + 1).padStart(2, '0');
+    const d = String(jst.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
 }
 

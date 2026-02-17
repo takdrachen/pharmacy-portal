@@ -178,8 +178,8 @@ const DataStorage = {
     create(tableName, record) {
         const all = this.getAll(tableName);
         record.id = this.generateId();
-        record.created_at = new Date().toISOString();
-        record.updated_at = new Date().toISOString();
+        record.created_at = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Tokyo' }).replace(' ', 'T') + '+09:00';
+        record.updated_at = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Tokyo' }).replace(' ', 'T') + '+09:00';
         all.push(record);
         this._cache[tableName] = all;
         this._localSaveAll(tableName, all);
@@ -194,7 +194,7 @@ const DataStorage = {
         const all = this.getAll(tableName);
         const index = all.findIndex(item => item.id === id);
         if (index === -1) return null;
-        all[index] = { ...all[index], ...updates, updated_at: new Date().toISOString() };
+        all[index] = { ...all[index], ...updates, updated_at: new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Tokyo' }).replace(' ', 'T') + '+09:00' };
         this._cache[tableName] = all;
         this._localSaveAll(tableName, all);
 
