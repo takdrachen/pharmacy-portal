@@ -280,7 +280,7 @@ function handleWriteAction(payload) {
 function initializeSheets() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetConfigs = {
-    'medicines': ['id','name','genericName','category','salesStatus','discontinuationDate','alternative','supplyInfo','notes','isFavorite','createdAt','updatedAt'],
+    'medicines': ['id','name','genericName','category','salesStatus','discontinuationDate','alternative','notes','isFavorite','createdAt','updatedAt'],
     'announcements': ['id','title','content','priority','date','category','author','createdAt','updatedAt'],
     'shifts': ['id','employeeId','employeeName','date','startTime','endTime','type','notes','createdAt','updatedAt'],
     'employees': ['id','name','furigana','position','employmentType','role','phone','email','hireDate','status','qualification','notes','createdAt','updatedAt']

@@ -316,7 +316,7 @@
                     <h2><i class="fas fa-pills"></i> 薬剤情報管理</h2>
                 </div>
                 <div class="header-right">
-                    <input type="text" class="search-input" id="medicine-search-input" placeholder="薬剤名・備考・出荷調整で検索..." oninput="renderMedicineList()">
+                    <input type="text" class="search-input" id="medicine-search-input" placeholder="薬剤名・備考で検索..." oninput="renderMedicineList()">
 
                     <select id="medicine-status-filter" class="action-btn" onchange="renderMedicineList()">
                         <option value="">全販売状態</option>
@@ -375,10 +375,6 @@
                         <textarea id="inMedicineAlternative" placeholder="代替薬品名" rows="1"></textarea>
                     </div>
                     <div class="input-group">
-                        <label>出荷調整情報</label>
-                        <textarea id="inMedicineSupplyInfo" placeholder="出荷調整の詳細"></textarea>
-                    </div>
-                    <div class="input-group">
                         <label>備考</label>
                         <textarea id="inMedicineNotes" placeholder="その他の情報"></textarea>
                     </div>
@@ -400,7 +396,6 @@
                     <div>販売状態</div>
                     <div>販売開始・中止日</div>
                     <div>代替薬品</div>
-                    <div>出荷調整</div>
                     <div>備考</div>
                     <div style="text-align:center">操作</div>
                 </div>
@@ -781,10 +776,6 @@
                     <input type="text" id="medicine-alternative" placeholder="販売中止後の代替薬品名">
                 </div>
                 <div class="form-group">
-                    <label>出荷調整情報</label>
-                    <textarea id="medicine-supply-info" rows="3" placeholder="出荷調整の詳細や入荷予定など"></textarea>
-                </div>
-                <div class="form-group">
                     <label>備考</label>
                     <textarea id="medicine-notes" rows="3"></textarea>
                 </div>
@@ -825,10 +816,6 @@
                         <strong>代替薬品:</strong>
                         <span id="medicine-detail-alternative"></span>
                     </div>
-                </div>
-                <div class="detail-section" id="medicine-detail-supply-section" style="display: none;">
-                    <h4><i class="fas fa-exclamation-triangle"></i> 出荷調整情報</h4>
-                    <p id="medicine-detail-supply-info"></p>
                 </div>
                 <div class="detail-section" id="medicine-detail-notes-section" style="display: none;">
                     <h4><i class="fas fa-sticky-note"></i> 備考</h4>

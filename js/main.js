@@ -881,7 +881,6 @@ function openMedicineModal(medicine = null) {
         document.getElementById('medicine-sales-start-date').value = periodVal || '';
         document.getElementById('medicine-discontinuation-date').value = '';
         document.getElementById('medicine-alternative').value = medicine.alternative_medicine || '';
-        document.getElementById('medicine-supply-info').value = medicine.supply_info || '';
         document.getElementById('medicine-notes').value = medicine.notes || '';
         document.getElementById('medicine-is-favorite').checked = medicine.is_favorite || false;
         currentEditingMedicineId = medicine.id;
@@ -920,7 +919,6 @@ function saveMedicine() {
         sales_start_date: salesStartDate,
         discontinuation_date: discontinuationDate,
         alternative_medicine: document.getElementById('medicine-alternative').value,
-        supply_info: document.getElementById('medicine-supply-info').value,
         notes: document.getElementById('medicine-notes').value,
         is_favorite: document.getElementById('medicine-is-favorite').checked
     };
@@ -982,15 +980,6 @@ function showMedicineDetail(id) {
         alternativeRow.style.display = 'grid';
     } else {
         alternativeRow.style.display = 'none';
-    }
-    
-    // 出荷調整情報の表示
-    const supplySection = document.getElementById('medicine-detail-supply-section');
-    if (medicine.supply_info) {
-        document.getElementById('medicine-detail-supply-info').textContent = medicine.supply_info;
-        supplySection.style.display = 'block';
-    } else {
-        supplySection.style.display = 'none';
     }
     
     // 備考の表示
@@ -1719,7 +1708,6 @@ function generateDemoResponse(userMessage, context) {
             let response = `出荷調整中の薬剤は以下の${supplyIssues.length}件です：\n\n`;
             supplyIssues.forEach(med => {
                 response += `• **${med.name}**\n`;
-                if (med.supply_info) response += `  ${med.supply_info}\n`;
                 response += '\n';
             });
             return response;

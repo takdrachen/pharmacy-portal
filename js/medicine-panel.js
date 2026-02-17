@@ -80,7 +80,6 @@ window.addMedicine = function() {
         discontinuationDate = parts[1] ? parts[1].trim() : '';
     }
     const alternative = document.getElementById('inMedicineAlternative').value.trim();
-    const supplyInfo = document.getElementById('inMedicineSupplyInfo').value.trim();
     const notes = document.getElementById('inMedicineNotes').value.trim();
     const isFavorite = document.getElementById('inMedicineIsFavorite').checked;
 
@@ -95,7 +94,6 @@ window.addMedicine = function() {
         sales_start_date: salesStartDate,
         discontinuation_date: discontinuationDate,
         alternative_medicine: alternative,
-        supply_info: supplyInfo,
         notes,
         is_favorite: isFavorite
     };
@@ -109,7 +107,6 @@ window.addMedicine = function() {
         document.getElementById('inMedicineSalesStartDate').value = '';
         document.getElementById('inMedicineDiscontinuationDate').value = '';
         document.getElementById('inMedicineAlternative').value = '';
-        document.getElementById('inMedicineSupplyInfo').value = '';
         document.getElementById('inMedicineNotes').value = '';
         document.getElementById('inMedicineIsFavorite').checked = false;
 
@@ -140,12 +137,11 @@ function getFilteredMedicines() {
 
     let data = [...window.medicinesData];
 
-    // 検索フィルター（薬剤名、代替薬品、出荷調整、備考）
+    // 検索フィルター（薬剤名、代替薬品、備考）
     if (searchText) {
         data = data.filter(item => 
             (item.name && item.name.toLowerCase().includes(searchText)) ||
             (item.alternative_medicine && item.alternative_medicine.toLowerCase().includes(searchText)) ||
-            (item.supply_info && item.supply_info.toLowerCase().includes(searchText)) ||
             (item.notes && item.notes.toLowerCase().includes(searchText))
         );
     }
@@ -255,7 +251,6 @@ function renderTableView(data) {
                 <div><span class="${statusClass}">${item.sales_status}</span></div>
                 <div class="col-date">${periodText}</div>
                 <div class="col-alternative">${escapeHtmlMed(item.alternative_medicine) || '-'}</div>
-                <div class="col-supply-info">${item.supply_info ? `<span class="col-supply-badge">${escapeHtmlMed(item.supply_info)}</span>` : '-'}</div>
                 <div class="col-notes-cell">${item.notes ? `<span class="col-note">${escapeHtmlMed(item.notes)}</span>` : ''}</div>
                 <div class="action-cell">
                     <button class="icon-btn btn-edit" onclick="editMedicine('${item.id}')" title="編集">✏️</button>
@@ -319,11 +314,6 @@ function renderCardView(data) {
                 <div class="medicine-card-info">
                     <i class="fas fa-exchange-alt"></i>
                     <span>代替: ${escapeHtmlMed(item.alternative_medicine)}</span>
-                </div>` : ''}
-                ${item.supply_info ? `
-                <div class="medicine-card-info medicine-card-supply">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>${escapeHtmlMed(item.supply_info)}</span>
                 </div>` : ''}
                 ${item.notes ? `
                 <div class="medicine-card-notes">

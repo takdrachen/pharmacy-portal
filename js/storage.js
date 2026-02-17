@@ -36,7 +36,6 @@ const DataStorage = {
         sales_start_date: 'salesStartDate',
         discontinuation_date: 'discontinuationDate',
         alternative_medicine: 'alternative',
-        supply_info: 'supplyInfo',
         is_favorite: 'isFavorite',
         created_at: 'createdAt',
         updated_at: 'updatedAt',
@@ -467,14 +466,14 @@ const DataStorage = {
         // 薬剤サンプルデータ
         if (this._localGetAll('medicines').length === 0) {
             const sampleMedicines = [
-                { name: 'ロキソプロフェンNa錦60mg', category: '内服薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: '解熱鎮痛消炎剤。食後服用。', is_favorite: true },
-                { name: 'アムロジピンOD錦5mg', category: '内服薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: 'Ca拮抗薬。高血圧症・狭心症に使用。', is_favorite: true },
-                { name: 'メトホルミン塩酸塩錬250mg「XX」', category: '内服薬', sales_status: '出荷調整中', discontinuation_date: '', alternative_medicine: 'メトホルミン塩酸塩錬250mg「YY」', supply_info: '2026年1月より出荷調整中。代替品への切替を推奨。', notes: 'ビグアナイド系糖尿病治療薬', is_favorite: false },
-                { name: 'ガスモチン鋠5mg', category: '内服薬', sales_status: '販売中止', discontinuation_date: '2025年12月31日', alternative_medicine: 'モサプリドクエン酸塩錬5mg「サワイ」', supply_info: '', notes: '消化管運動促進薬。先発品販売中止。', is_favorite: false },
-                { name: 'ヒルドイドソフト軟膏0.3%', category: '外用薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: '保湿・血行促進。皮脂欠乏症に使用。', is_favorite: true },
-                { name: 'ツムラ葛根湯エキス顮粒（医療用）', category: '漢方薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: '感冒の初期、肩こりなどに使用。', is_favorite: false },
-                { name: 'リンデロンVG軟膏0.12%', category: '外用薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: 'ステロイド＋抗生物質配合外用薬', is_favorite: false },
-                { name: 'セレコキシブ錬100mg「サワイ」', category: '内服薬', sales_status: '新規採用', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: 'COX-2選択的阻害薬。2026年2月より採用。', is_favorite: false }
+                { name: 'ロキソプロフェンNa錦60mg', category: '内服薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', notes: '解熱鎮痛消炎剤。食後服用。', is_favorite: true },
+                { name: 'アムロジピンOD錦5mg', category: '内服薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', notes: 'Ca拮抗薬。高血圧症・狭心症に使用。', is_favorite: true },
+                { name: 'メトホルミン塩酸塩錬250mg「XX」', category: '内服薬', sales_status: '出荷調整中', discontinuation_date: '', alternative_medicine: 'メトホルミン塩酸塩錬250mg「YY」', notes: 'ビグアナイド系糖尿病治療薬。2026年1月より出荷調整中。代替品への切替を推奨。', is_favorite: false },
+                { name: 'ガスモチン鏠5mg', category: '内服薬', sales_status: '販売中止', discontinuation_date: '2025年12月31日', alternative_medicine: 'モサプリドクエン酸塩錬5mg「サワイ」', notes: '消化管運動促進薬。先発品販売中止。', is_favorite: false },
+                { name: 'ヒルドイドソフト軟膏0.3%', category: '外用薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', notes: '保湿・血行促進。皮脂欠乏症に使用。', is_favorite: true },
+                { name: 'ツムラ葛根湯エキス顮粒（医療用）', category: '漢方薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', notes: '感冒の初期、肩こりなどに使用。', is_favorite: false },
+                { name: 'リンデロンVG軟膏0.12%', category: '外用薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', notes: 'ステロイド＋抗生物質配合外用薬', is_favorite: false },
+                { name: 'セレコキシブ錬100mg「サワイ」', category: '内服薬', sales_status: '新規採用', discontinuation_date: '', alternative_medicine: '', notes: 'COX-2選択的阻害薬。2026年2月より採用。', is_favorite: false }
             ];
             sampleMedicines.forEach(med => {
                 med.id = this.generateId();

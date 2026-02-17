@@ -283,7 +283,7 @@
 
 .medicine-grid-layout {
     display: grid;
-    grid-template-columns: 40px 2fr 1fr 1.5fr 1.5fr 1.5fr 1.5fr 80px;
+    grid-template-columns: 40px 2fr 1fr 1.5fr 1.5fr 2fr 80px;
     gap: 12px;
     align-items: start;
     table-layout: fixed;
@@ -400,31 +400,6 @@
     overflow-wrap: anywhere;
     min-width: 0;
     font-size: var(--font-size-xs);
-}
-
-.col-supply-info {
-    min-width: 0;
-    overflow: hidden;
-    word-wrap: break-word;
-    word-break: break-all;
-    overflow-wrap: anywhere;
-    white-space: normal;
-    line-height: 1.4;
-}
-
-.col-supply-badge {
-    background: #fff3e0;
-    color: #e65100;
-    padding: 3px 8px;
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
-    display: inline;
-    word-wrap: break-word;
-    word-break: break-all;
-    overflow-wrap: anywhere;
-    white-space: normal;
-    line-height: 1.5;
 }
 
 .col-notes-cell {
@@ -655,10 +630,6 @@
     flex-shrink: 0;
 }
 
-.medicine-card-supply i {
-    color: var(--color-warning);
-}
-
 .medicine-card-notes {
     font-size: var(--font-size-xs);
     color: var(--text-tertiary);
@@ -677,7 +648,7 @@
     }
     
     .medicine-grid-layout {
-        grid-template-columns: 40px 1.5fr 0.8fr 1fr 1fr 1fr 1fr 70px;
+        grid-template-columns: 40px 1.5fr 0.8fr 1fr 1fr 1.5fr 70px;
         font-size: var(--font-size-xs);
     }
 
