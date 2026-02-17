@@ -248,7 +248,7 @@ function doGet(e) {
       var action = params.action || 'read';
       var sheetName = params.sheet || 'medicines';
       if (action === 'read') { output = readData(sheetName); }
-      else if (action === 'ping') { output = { success: true, message: 'Connected', timestamp: new Date().toISOString() }; }
+      else if (action === 'ping') { output = { success: true, message: 'Connected', timestamp: Utilities.formatDate(new Date(), 'Asia/Tokyo', "yyyy-MM-dd'T'HH:mm:ssXXX") }; }
       else if (action === 'init') { output = initializeSheets(); }
       else { output = { success: false, error: 'Unknown action: ' + action }; }
     }
@@ -333,7 +333,7 @@ function readData(sheetName) {
           var minutes = val.getMinutes();
           val = ('0' + hours).slice(-2) + ':' + ('0' + minutes).slice(-2);
         } else {
-          val = val.toISOString();
+          val = Utilities.formatDate(val, 'Asia/Tokyo', "yyyy-MM-dd'T'HH:mm:ssXXX");
         }
       }
       if (timeOnlyFields.indexOf(header) !== -1 && typeof val === 'string') {
@@ -357,7 +357,7 @@ function createData(sheetName, data) {
   if (!sheet) return { success: false, error: 'Sheet not found: ' + sheetName };
   var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   if (!data.id) data.id = generateId();
-  var now = new Date().toISOString();
+  var now = Utilities.formatDate(new Date(), 'Asia/Tokyo', "yyyy-MM-dd'T'HH:mm:ssXXX");
   if (!data.createdAt) data.createdAt = now;
   if (!data.updatedAt) data.updatedAt = now;
   var row = headers.map(function(header) { return data[header] !== undefined ? data[header] : ''; });
@@ -392,7 +392,7 @@ function updateData(sheetName, id, data) {
     if (String(idValues[i][0]) === String(id)) { rowIndex = i + 2; break; }
   }
   if (rowIndex === -1) return { success: false, error: 'Record not found: ' + id };
-  data.updatedAt = new Date().toISOString();
+  data.updatedAt = Utilities.formatDate(new Date(), 'Asia/Tokyo', "yyyy-MM-dd'T'HH:mm:ssXXX");
   var existingRow = sheet.getRange(rowIndex, 1, 1, headers.length).getValues()[0];
   var updatedRow = headers.map(function(header, index) {
     if (data[header] !== undefined) return data[header];
@@ -437,7 +437,7 @@ function bulkCreateData(sheetName, dataArray) {
   var sheet = ss.getSheetByName(sheetName);
   if (!sheet) return { success: false, error: 'Sheet not found: ' + sheetName };
   var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  var now = new Date().toISOString();
+  var now = Utilities.formatDate(new Date(), 'Asia/Tokyo', "yyyy-MM-dd'T'HH:mm:ssXXX");
   var rows = dataArray.map(function(data) {
     if (!data.id) data.id = generateId();
     if (!data.createdAt) data.createdAt = now;
@@ -466,7 +466,7 @@ function clearAndImportData(sheetName, dataArray) {
   var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   var lastRow = sheet.getLastRow();
   if (lastRow > 1) { sheet.deleteRows(2, lastRow - 1); }
-  var now = new Date().toISOString();
+  var now = Utilities.formatDate(new Date(), 'Asia/Tokyo', "yyyy-MM-dd'T'HH:mm:ssXXX");
   var rows = dataArray.map(function(data) {
     if (!data.id) data.id = generateId();
     if (!data.createdAt) data.createdAt = now;

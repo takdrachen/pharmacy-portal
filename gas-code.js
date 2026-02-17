@@ -41,7 +41,7 @@ function doGet(e) {
       if (action === 'read') {
         output = readData(sheetName);
       } else if (action === 'ping') {
-        output = { success: true, message: 'Connected', timestamp: new Date().toISOString() };
+        output = { success: true, message: 'Connected', timestamp: Utilities.formatDate(new Date(), 'Asia/Tokyo', "yyyy-MM-dd'T'HH:mm:ssXXX") };
       } else if (action === 'init') {
         output = initializeSheets();
       } else {
@@ -182,7 +182,7 @@ function readData(sheetName) {
           val = ('0' + hours).slice(-2) + ':' + ('0' + minutes).slice(-2);
         } else {
           // 通常の日付フィールド: ISO文字列に変換
-          val = val.toISOString();
+          val = Utilities.formatDate(val, 'Asia/Tokyo', "yyyy-MM-dd'T'HH:mm:ssXXX");
         }
       }
       // 文字列の時間フィールドが1899年ベースのISO形式になっている場合の修正
@@ -230,7 +230,7 @@ function createData(sheetName, data) {
   }
   
   // タイムスタンプ
-  var now = new Date().toISOString();
+  var now = Utilities.formatDate(new Date(), 'Asia/Tokyo', "yyyy-MM-dd'T'HH:mm:ssXXX");
   if (!data.createdAt) data.createdAt = now;
   if (!data.updatedAt) data.updatedAt = now;
   
@@ -292,7 +292,7 @@ function updateData(sheetName, id, data) {
   }
   
   // 更新タイムスタンプ
-  data.updatedAt = new Date().toISOString();
+  data.updatedAt = Utilities.formatDate(new Date(), 'Asia/Tokyo', "yyyy-MM-dd'T'HH:mm:ssXXX");
   
   // 既存データを取得してマージ
   var existingRow = sheet.getRange(rowIndex, 1, 1, headers.length).getValues()[0];
@@ -365,7 +365,7 @@ function bulkCreateData(sheetName, dataArray) {
   }
   
   var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  var now = new Date().toISOString();
+  var now = Utilities.formatDate(new Date(), 'Asia/Tokyo', "yyyy-MM-dd'T'HH:mm:ssXXX");
   
   var rows = dataArray.map(function(data) {
     if (!data.id) data.id = generateId();
@@ -412,7 +412,7 @@ function clearAndImportData(sheetName, dataArray) {
   }
   
   // データをインポート
-  var now = new Date().toISOString();
+  var now = Utilities.formatDate(new Date(), 'Asia/Tokyo', "yyyy-MM-dd'T'HH:mm:ssXXX");
   var rows = dataArray.map(function(data) {
     if (!data.id) data.id = generateId();
     if (!data.createdAt) data.createdAt = now;

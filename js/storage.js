@@ -6,6 +6,12 @@
 //   3. ローカルストレージモード（フォールバック）
 // ========================================
 
+// JSTタイムスタンプ生成ヘルパー
+function toJSTString(date) {
+    if (!date) date = new Date();
+    return date.toLocaleString('sv-SE', { timeZone: 'Asia/Tokyo' }).replace(' ', 'T') + '+09:00';
+}
+
 const DataStorage = {
     // APIベースURL
     API_BASE: '/api',
@@ -26,7 +32,6 @@ const DataStorage = {
 
     // フィールド名マッピング（ローカル ↔ スプレッドシート）
     FIELD_MAP_TO_SHEETS: {
-        generic_name: 'genericName',
         sales_status: 'salesStatus',
         sales_start_date: 'salesStartDate',
         discontinuation_date: 'discontinuationDate',
@@ -411,7 +416,7 @@ const DataStorage = {
         SheetsAPI.saveConfig({
             gasUrl: gasUrl,
             connected: true,
-            connectedAt: new Date().toISOString()
+            connectedAt: toJSTString()
         });
 
         // モードを切り替え
@@ -447,19 +452,19 @@ const DataStorage = {
         // 薬剤サンプルデータ
         if (this._localGetAll('medicines').length === 0) {
             const sampleMedicines = [
-                { name: 'ロキソプロフェンNa錦60mg', generic_name: 'ロキソプロフェンナトリウム水和物', category: '内服薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: '解熱鎮痛消炎剤。食後服用。', is_favorite: true },
-                { name: 'アムロジピンOD錦5mg', generic_name: 'アムロジピンベシル酸塩', category: '内服薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: 'Ca拮抗薬。高血圧症・狭心症に使用。', is_favorite: true },
-                { name: 'メトホルミン塩酸塩錠250mg「XX」', generic_name: 'メトホルミン塩酸塩', category: '内服薬', sales_status: '出荷調整中', discontinuation_date: '', alternative_medicine: 'メトホルミン塩酸塩錠250mg「YY」', supply_info: '2026年1月より出荷調整中。代替品への切替を推奨。', notes: 'ビグアナイド系糖尿病治療薬', is_favorite: false },
-                { name: 'ガスモチン錠5mg', generic_name: 'モサプリドクエン酸塩水和物', category: '内服薬', sales_status: '販売中止', discontinuation_date: '2025年12月31日', alternative_medicine: 'モサプリドクエン酸塩錠5mg「サワイ」', supply_info: '', notes: '消化管運動促進薬。先発品販売中止。', is_favorite: false },
-                { name: 'ヒルドイドソフト軟膏0.3%', generic_name: 'ヘパリン類似物質', category: '外用薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: '保湿・血行促進。皮脂欠乏症に使用。', is_favorite: true },
-                { name: 'ツムラ葛根湯エキス顮粒（医療用）', generic_name: '葛根湯', category: '漢方薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: '感冒の初期、肩こりなどに使用。', is_favorite: false },
-                { name: 'リンデロンVG軟膏0.12%', generic_name: 'ベタメタゾン吉草酸エステル・ゲンタマイシン硫酸塩', category: '外用薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: 'ステロイド＋抗生物質配合外用薬', is_favorite: false },
-                { name: 'セレコキシブ錠100mg「サワイ」', generic_name: 'セレコキシブ', category: '内服薬', sales_status: '新規採用', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: 'COX-2選択的阻害薬。2026年2月より採用。', is_favorite: false }
+                { name: 'ロキソプロフェンNa錦60mg', category: '内服薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: '解熱鎮痛消炎剤。食後服用。', is_favorite: true },
+                { name: 'アムロジピンOD錦5mg', category: '内服薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: 'Ca拮抗薬。高血圧症・狭心症に使用。', is_favorite: true },
+                { name: 'メトホルミン塩酸塩錬250mg「XX」', category: '内服薬', sales_status: '出荷調整中', discontinuation_date: '', alternative_medicine: 'メトホルミン塩酸塩錬250mg「YY」', supply_info: '2026年1月より出荷調整中。代替品への切替を推奨。', notes: 'ビグアナイド系糖尿病治療薬', is_favorite: false },
+                { name: 'ガスモチン鋠5mg', category: '内服薬', sales_status: '販売中止', discontinuation_date: '2025年12月31日', alternative_medicine: 'モサプリドクエン酸塩錬5mg「サワイ」', supply_info: '', notes: '消化管運動促進薬。先発品販売中止。', is_favorite: false },
+                { name: 'ヒルドイドソフト軟膏0.3%', category: '外用薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: '保湿・血行促進。皮脂欠乏症に使用。', is_favorite: true },
+                { name: 'ツムラ葛根湯エキス顮粒（医療用）', category: '漢方薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: '感冒の初期、肩こりなどに使用。', is_favorite: false },
+                { name: 'リンデロンVG軟膏0.12%', category: '外用薬', sales_status: 'その他', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: 'ステロイド＋抗生物質配合外用薬', is_favorite: false },
+                { name: 'セレコキシブ錬100mg「サワイ」', category: '内服薬', sales_status: '新規採用', discontinuation_date: '', alternative_medicine: '', supply_info: '', notes: 'COX-2選択的阻害薬。2026年2月より採用。', is_favorite: false }
             ];
             sampleMedicines.forEach(med => {
                 med.id = this.generateId();
-                med.created_at = new Date().toISOString();
-                med.updated_at = new Date().toISOString();
+                med.created_at = toJSTString();
+                med.updated_at = toJSTString();
             });
             this._localSaveAll('medicines', sampleMedicines);
             this._cache['medicines'] = sampleMedicines;
@@ -475,8 +480,8 @@ const DataStorage = {
             ];
             sampleEmployees.forEach(emp => {
                 emp.id = this.generateId();
-                emp.created_at = new Date().toISOString();
-                emp.updated_at = new Date().toISOString();
+                emp.created_at = toJSTString();
+                emp.updated_at = toJSTString();
             });
             this._localSaveAll('employees', sampleEmployees);
             this._cache['employees'] = sampleEmployees;
@@ -485,14 +490,14 @@ const DataStorage = {
         // お知らせサンプルデータ
         if (this._localGetAll('announcements').length === 0) {
             const sampleAnnouncements = [
-                { title: 'ガスモチン錠5mg 販売中止のお知らせ', category: '業務連絡', priority: '重要', author: '山田 太郎', content: 'ガスモチン錠5mgが2025年12月31日をもって販売中止となりました。代替薬としてモサプリドクエン酸塩錠5mg「サワイ」への切替をお願いします。', date: '2026-01-15T09:00:00.000Z' },
-                { title: '2月の調剤報酬改定研修について', category: '研修情報', priority: '通常', author: '佐藤 花子', content: '2026年2月20日（金）18:00より、調剤報酬改定に関する研修を実施します。全スタッフ参加をお願いします。場所：薬局2階会議室。', date: '2026-02-01T10:00:00.000Z' },
-                { title: 'メトホルミン塩酸塩錠 出荷調整情報', category: '業務連絡', priority: '緊急', author: '山田 太郎', content: 'メトホルミン塩酸塩錠250mg「XX」が出荷調整中です。在庫が少なくなっています。代替品「YY」への切替を検討してください。', date: '2026-02-10T08:30:00.000Z' }
+                { title: 'ガスモチン鋠5mg 販売中止のお知らせ', category: '業務連絡', priority: '重要', author: '山田 太郎', content: 'ガスモチン鋠5mgが2025年12月31日をもって販売中止となりました。代替薬としてモサプリドクエン酸塩鋠5mg「サワイ」への切替をお願いします。', date: '2026-01-15T09:00:00+09:00' },
+                { title: '2月の調剤報酬改定研修について', category: '研修情報', priority: '通常', author: '佐藤 花子', content: '2026年2月20日（金）18:00より、調剤報酬改定に関する研修を実施します。全スタッフ参加をお願いします。場所：薬局2階会議室。', date: '2026-02-01T10:00:00+09:00' },
+                { title: 'メトホルミン塩酸塩錬 出荷調整情報', category: '業務連絡', priority: '緊急', author: '山田 太郎', content: 'メトホルミン塩酸塩錬250mg「XX」が出荷調整中です。在庫が少なくなっています。代替品「YY」への切替を検討してください。', date: '2026-02-10T08:30:00+09:00' }
             ];
             sampleAnnouncements.forEach(ann => {
                 ann.id = this.generateId();
-                ann.created_at = new Date().toISOString();
-                ann.updated_at = new Date().toISOString();
+                ann.created_at = toJSTString();
+                ann.updated_at = toJSTString();
             });
             this._localSaveAll('announcements', sampleAnnouncements);
             this._cache['announcements'] = sampleAnnouncements;
@@ -522,13 +527,13 @@ const DataStorage = {
                     shifts.push({
                         id: this.generateId(),
                         staff_name: staff,
-                        date: date.toISOString(),
+                        date: toJSTString(date),
                         shift_type: shiftTypes[typeIdx],
                         start_time: timeSlots[typeIdx].start,
                         end_time: timeSlots[typeIdx].end,
                         notes: '',
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
+                        created_at: toJSTString(),
+                        updated_at: toJSTString()
                     });
                 });
             }

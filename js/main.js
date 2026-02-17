@@ -490,7 +490,7 @@ function saveAnnouncement() {
         priority: document.getElementById('announcement-priority').value,
         author: document.getElementById('announcement-author').value,
         content: document.getElementById('announcement-content').value,
-        date: new Date().toISOString()
+        date: toJSTString()
     };
     
     try {
@@ -785,7 +785,7 @@ function closeShiftModal() {
 function saveShift() {
     const data = {
         staff_name: document.getElementById('shift-staff-name').value,
-        date: new Date(document.getElementById('shift-date').value).toISOString(),
+        date: toJSTString(new Date(document.getElementById('shift-date').value)),
         shift_type: document.getElementById('shift-type').value,
         start_time: document.getElementById('shift-start-time').value,
         end_time: document.getElementById('shift-end-time').value,
@@ -875,7 +875,6 @@ function openMedicineModal(medicine = null) {
         title.textContent = '薬剤情報編集';
         document.getElementById('medicine-id').value = medicine.id;
         document.getElementById('medicine-name').value = medicine.name;
-        document.getElementById('medicine-generic-name').value = medicine.generic_name || ''; // hidden field - 互換性維持
         document.getElementById('medicine-sales-status').value = medicine.sales_status || 'その他';
         // 販売期間の統合表示
         const periodVal = [medicine.sales_start_date, medicine.discontinuation_date].filter(Boolean).join('～');
@@ -917,7 +916,6 @@ function saveMedicine() {
     }
     const data = {
         name: document.getElementById('medicine-name').value,
-        generic_name: document.getElementById('medicine-generic-name').value,
         sales_status: document.getElementById('medicine-sales-status').value,
         sales_start_date: salesStartDate,
         discontinuation_date: discontinuationDate,
@@ -1634,8 +1632,7 @@ function buildContextString(context) {
         contextStr += '\n【薬剤情報】\n';
         context.medicines.forEach(med => {
             contextStr += `- ${med.name}`;
-            if (med.generic_name) contextStr += ` (${med.generic_name})`;
-            contextStr += ` - ${med.category} - ${med.sales_status}`;
+            contextStr += ` - ${med.sales_status}`;
             if (med.alternative_medicine) contextStr += ` [代替: ${med.alternative_medicine}]`;
             contextStr += '\n';
         });
@@ -1737,8 +1734,7 @@ function generateDemoResponse(userMessage, context) {
             let response = `よく使う薬剤として登録されているのは以下の${favorites.length}件です：\n\n`;
             favorites.forEach(med => {
                 response += `• ${med.name}`;
-                if (med.generic_name) response += ` (${med.generic_name})`;
-                response += ` - ${med.category}\n`;
+                response += ` - ${med.sales_status}\n`;
             });
             return response;
         }

@@ -42,7 +42,6 @@ window.openMedicineInputCard = function() {
 
 window.addMedicine = function() {
     const name = document.getElementById('inMedicineName').value.trim();
-    const genericName = document.getElementById('inMedicineGenericName').value.trim();
     const salesStatus = document.getElementById('inMedicineSalesStatus').value;
     // 販売期間フィールドの値を解析
     const periodRaw = document.getElementById('inMedicineSalesStartDate').value.trim();
@@ -69,7 +68,6 @@ window.addMedicine = function() {
 
     const data = {
         name,
-        generic_name: genericName,
         sales_status: salesStatus,
         sales_start_date: salesStartDate,
         discontinuation_date: discontinuationDate,
@@ -84,7 +82,6 @@ window.addMedicine = function() {
 
         // フォームクリア
         document.getElementById('inMedicineName').value = '';
-        document.getElementById('inMedicineGenericName').value = '';
         document.getElementById('inMedicineSalesStatus').value = 'その他';
         document.getElementById('inMedicineSalesStartDate').value = '';
         document.getElementById('inMedicineDiscontinuationDate').value = '';
