@@ -3,6 +3,29 @@
 let currentMedicineFilter = 'all';
 let currentMedicineViewMode = 'table'; // 'table' or 'card'
 
+// ISO日付やISO日時文字列を読みやすい形式に変換
+function formatDateField(val) {
+    if (!val) return '';
+    // ISO日時形式 (例: 2026-10-31T15:00:00.000Z, 2026-01-15T09:00:00+09:00)
+    const isoMatch = val.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+    if (isoMatch) {
+        const d = new Date(val);
+        if (!isNaN(d.getTime())) {
+            const y = d.toLocaleString('en-US', { timeZone: 'Asia/Tokyo', year: 'numeric' });
+            const m = d.toLocaleString('en-US', { timeZone: 'Asia/Tokyo', month: '2-digit' });
+            const day = d.toLocaleString('en-US', { timeZone: 'Asia/Tokyo', day: '2-digit' });
+            return `${y}/${m}/${day}`;
+        }
+    }
+    // ISO日付のみ形式 (例: 2026-10-31)
+    const dateOnly = val.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (dateOnly) {
+        return `${dateOnly[1]}/${dateOnly[2]}/${dateOnly[3]}`;
+    }
+    // それ以外はそのまま返す（例: 2025年12月31日）
+    return val;
+}
+
 // 表示モード切替
 window.setMedicineViewMode = function(mode) {
     currentMedicineViewMode = mode;
@@ -210,11 +233,11 @@ function renderTableView(data) {
         // 販売期間の統合表示
         let periodText = '';
         if (item.sales_start_date && item.discontinuation_date) {
-            periodText = escapeHtmlMed(item.sales_start_date) + ' ～ ' + escapeHtmlMed(item.discontinuation_date);
+            periodText = escapeHtmlMed(formatDateField(item.sales_start_date)) + ' ～ ' + escapeHtmlMed(formatDateField(item.discontinuation_date));
         } else if (item.sales_start_date) {
-            periodText = escapeHtmlMed(item.sales_start_date);
+            periodText = escapeHtmlMed(formatDateField(item.sales_start_date));
         } else if (item.discontinuation_date) {
-            periodText = '～ ' + escapeHtmlMed(item.discontinuation_date);
+            periodText = '～ ' + escapeHtmlMed(formatDateField(item.discontinuation_date));
         } else {
             periodText = '-';
         }
@@ -262,11 +285,11 @@ function renderCardView(data) {
         // 販売期間の統合表示
         let periodText = '';
         if (item.sales_start_date && item.discontinuation_date) {
-            periodText = escapeHtmlMed(item.sales_start_date) + ' ～ ' + escapeHtmlMed(item.discontinuation_date);
+            periodText = escapeHtmlMed(formatDateField(item.sales_start_date)) + ' ～ ' + escapeHtmlMed(formatDateField(item.discontinuation_date));
         } else if (item.sales_start_date) {
-            periodText = escapeHtmlMed(item.sales_start_date);
+            periodText = escapeHtmlMed(formatDateField(item.sales_start_date));
         } else if (item.discontinuation_date) {
-            periodText = '～ ' + escapeHtmlMed(item.discontinuation_date);
+            periodText = '～ ' + escapeHtmlMed(formatDateField(item.discontinuation_date));
         }
 
         return `

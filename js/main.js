@@ -963,10 +963,10 @@ function showMedicineDetail(id) {
     // 販売期間の表示（統合）
     const salesPeriodRow = document.getElementById('medicine-detail-sales-period-row');
     const periodParts = [];
-    if (medicine.sales_start_date) periodParts.push(medicine.sales_start_date);
+    if (medicine.sales_start_date) periodParts.push(typeof formatDateField === 'function' ? formatDateField(medicine.sales_start_date) : medicine.sales_start_date);
     if (medicine.discontinuation_date) {
         if (periodParts.length > 0) periodParts.push(' ～ ');
-        periodParts.push(medicine.discontinuation_date);
+        periodParts.push(typeof formatDateField === 'function' ? formatDateField(medicine.discontinuation_date) : medicine.discontinuation_date);
     }
     if (periodParts.length > 0) {
         document.getElementById('medicine-detail-sales-period').textContent = periodParts.join('');

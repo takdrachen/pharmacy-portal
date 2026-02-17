@@ -72,6 +72,8 @@ const DataStorage = {
         const converted = {};
         // 時間のみのフィールド（スプレッドシート側のキー名）
         const timeOnlyFields = ['startTime', 'endTime'];
+        // 日付フィールド（ISO日時をYYYY/MM/DDに変換する対象）
+        const dateFields = ['salesStartDate', 'discontinuationDate'];
         for (const [key, value] of Object.entries(record)) {
             const localKey = this.FIELD_MAP_FROM_SHEETS[key] || key;
             let val = value;
@@ -84,6 +86,19 @@ const DataStorage = {
                     const matchISO = val.match(/^\d{4}-\d{2}-\d{2}T(\d{2}):(\d{2})/);
                     if (matchISO && !/^\d{2}:\d{2}$/.test(val)) {
                         val = matchISO[1] + ':' + matchISO[2];
+                    }
+                }
+            }
+            // 日付フィールドのISO日時をYYYY/MM/DDに変換
+            if (dateFields.includes(key) && typeof val === 'string' && val) {
+                const isoMatch = val.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+                if (isoMatch) {
+                    const d = new Date(val);
+                    if (!isNaN(d.getTime())) {
+                        const y = d.toLocaleString('en-US', { timeZone: 'Asia/Tokyo', year: 'numeric' });
+                        const m = d.toLocaleString('en-US', { timeZone: 'Asia/Tokyo', month: '2-digit' });
+                        const day = d.toLocaleString('en-US', { timeZone: 'Asia/Tokyo', day: '2-digit' });
+                        val = `${y}/${m}/${day}`;
                     }
                 }
             }
