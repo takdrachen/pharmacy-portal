@@ -210,11 +210,11 @@ function renderTableView(data) {
                     </span>
                 </div>
                 <div class="col-medicine-name">${escapeHtmlMed(item.name)}</div>
-                <div style="font-size:12px; color:#888;">${item.generic_name || '-'}</div>
+                <div class="col-generic-name">${escapeHtmlMed(item.generic_name) || '-'}</div>
                 <div>${item.category}</div>
                 <div><span class="${statusClass}">${item.sales_status}</span></div>
-                <div style="font-size:12px;">${item.alternative_medicine || '-'}</div>
-                <div>${item.notes ? `<span class="col-note">${truncateText(item.notes, 30)}</span>` : ''}</div>
+                <div class="col-alternative">${escapeHtmlMed(item.alternative_medicine) || '-'}</div>
+                <div class="col-notes-cell">${item.notes ? `<span class="col-note">${escapeHtmlMed(item.notes)}</span>` : ''}</div>
                 <div class="action-cell">
                     <button class="icon-btn btn-edit" onclick="editMedicine('${item.id}')" title="編集">✏️</button>
                     <button class="icon-btn btn-delete" onclick="deleteMedicine('${item.id}')" title="削除">×</button>
@@ -269,11 +269,11 @@ function renderCardView(data) {
                 ${item.supply_info ? `
                 <div class="medicine-card-info medicine-card-supply">
                     <i class="fas fa-exclamation-circle"></i>
-                    <span>${truncateText(item.supply_info, 60)}</span>
+                    <span>${escapeHtmlMed(item.supply_info)}</span>
                 </div>` : ''}
                 ${item.notes ? `
                 <div class="medicine-card-notes">
-                    <span>${truncateText(item.notes, 80)}</span>
+                    <span>${escapeHtmlMed(item.notes)}</span>
                 </div>` : ''}
             </div>
         `;

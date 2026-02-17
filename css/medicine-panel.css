@@ -383,17 +383,43 @@
     color: var(--color-info);
 }
 
+.col-generic-name {
+    font-size: 12px;
+    color: #888;
+    word-wrap: break-word;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    min-width: 0;
+    line-height: 1.4;
+}
+
+.col-alternative {
+    font-size: 12px;
+    word-wrap: break-word;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    min-width: 0;
+    line-height: 1.4;
+}
+
+.col-notes-cell {
+    min-width: 0;
+    overflow: hidden;
+}
+
 .col-note {
     background: var(--color-tertiary);
     padding: 4px 8px;
     border-radius: var(--radius-sm);
-    display: inline-block;
+    display: inline;
     font-size: var(--font-size-xs);
     word-wrap: break-word;
     word-break: break-all;
     overflow-wrap: anywhere;
     white-space: normal;
-    max-width: 100%;
+    line-height: 1.5;
 }
 
 .action-cell {
