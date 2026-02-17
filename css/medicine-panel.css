@@ -283,7 +283,7 @@
 
 .medicine-grid-layout {
     display: grid;
-    grid-template-columns: 40px 2fr 1.5fr 1fr 1.2fr 1.5fr 2fr 100px;
+    grid-template-columns: 40px 2fr 1.5fr 1fr 1fr 1fr 1.5fr 2fr 100px;
     gap: 12px;
     align-items: start;
     table-layout: fixed;
@@ -402,6 +402,13 @@
     white-space: normal;
     min-width: 0;
     line-height: 1.4;
+}
+
+.col-date {
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    min-width: 0;
+    font-size: var(--font-size-xs);
 }
 
 .col-notes-cell {
@@ -579,6 +586,22 @@
     overflow-wrap: anywhere;
 }
 
+.medicine-card-dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.medicine-card-date {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+}
+
+.medicine-card-date i {
+    margin-right: 3px;
+}
+
 .medicine-card-badges {
     display: flex;
     gap: 8px;
@@ -646,7 +669,7 @@
     }
     
     .medicine-grid-layout {
-        grid-template-columns: 40px 1.5fr 1fr 1fr 1fr 1fr 1.5fr 90px;
+        grid-template-columns: 40px 1.5fr 1fr 0.8fr 0.8fr 0.8fr 1fr 1.5fr 80px;
         font-size: var(--font-size-xs);
     }
 

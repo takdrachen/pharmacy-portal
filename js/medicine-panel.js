@@ -31,7 +31,6 @@ window.setMedicineFilter = function(mode) {
 // フィルタークリア
 window.clearMedicineFilters = function() {
     document.getElementById('medicine-search-input').value = '';
-    document.getElementById('medicine-category-filter').value = '';
     document.getElementById('medicine-status-filter').value = '';
     window.renderMedicineList();
 };
@@ -44,24 +43,24 @@ window.openMedicineInputCard = function() {
 window.addMedicine = function() {
     const name = document.getElementById('inMedicineName').value.trim();
     const genericName = document.getElementById('inMedicineGenericName').value.trim();
-    const category = document.getElementById('inMedicineCategory').value;
     const salesStatus = document.getElementById('inMedicineSalesStatus').value;
+    const salesStartDate = document.getElementById('inMedicineSalesStartDate').value.trim();
     const discontinuationDate = document.getElementById('inMedicineDiscontinuationDate').value.trim();
     const alternative = document.getElementById('inMedicineAlternative').value.trim();
     const supplyInfo = document.getElementById('inMedicineSupplyInfo').value.trim();
     const notes = document.getElementById('inMedicineNotes').value.trim();
     const isFavorite = document.getElementById('inMedicineIsFavorite').checked;
 
-    if (!name || !category) {
-        showToast('薬剤名とカテゴリーは必須です', 'warning');
+    if (!name) {
+        showToast('薬剤名は必須です', 'warning');
         return;
     }
 
     const data = {
         name,
         generic_name: genericName,
-        category,
         sales_status: salesStatus,
+        sales_start_date: salesStartDate,
         discontinuation_date: discontinuationDate,
         alternative_medicine: alternative,
         supply_info: supplyInfo,
@@ -75,8 +74,8 @@ window.addMedicine = function() {
         // フォームクリア
         document.getElementById('inMedicineName').value = '';
         document.getElementById('inMedicineGenericName').value = '';
-        document.getElementById('inMedicineCategory').value = '';
         document.getElementById('inMedicineSalesStatus').value = 'その他';
+        document.getElementById('inMedicineSalesStartDate').value = '';
         document.getElementById('inMedicineDiscontinuationDate').value = '';
         document.getElementById('inMedicineAlternative').value = '';
         document.getElementById('inMedicineSupplyInfo').value = '';
@@ -104,7 +103,6 @@ window.addMedicine = function() {
 // フィルタリングロジック
 function getFilteredMedicines() {
     const searchText = document.getElementById('medicine-search-input').value.toLowerCase();
-    const categoryFilter = document.getElementById('medicine-category-filter').value;
     const statusFilter = document.getElementById('medicine-status-filter') ? document.getElementById('medicine-status-filter').value : '';
     
     if (!window.medicinesData) return [];
@@ -121,30 +119,24 @@ function getFilteredMedicines() {
         );
     }
 
-    // カテゴリーフィルター
-    if (categoryFilter) {
-        data = data.filter(item => item.category === categoryFilter);
-    }
-
     // 販売状態フィルター
     if (statusFilter) {
         data = data.filter(item => item.sales_status === statusFilter);
     }
 
     // フィルターサマリーの更新
-    updateFilterSummary(searchText, categoryFilter, statusFilter, data.length);
+    updateFilterSummary(searchText, statusFilter, data.length);
 
     return data;
 }
 
 // フィルターサマリー表示
-function updateFilterSummary(searchText, categoryFilter, statusFilter, resultCount) {
+function updateFilterSummary(searchText, statusFilter, resultCount) {
     const summaryEl = document.getElementById('medicineFilterSummary');
     const textEl = document.getElementById('filterSummaryText');
     
     const filters = [];
     if (searchText) filters.push(`検索: "${searchText}"`);
-    if (categoryFilter) filters.push(`カテゴリー: ${categoryFilter}`);
     if (statusFilter) filters.push(`販売状態: ${statusFilter}`);
     
     if (filters.length > 0) {
@@ -211,8 +203,9 @@ function renderTableView(data) {
                 </div>
                 <div class="col-medicine-name">${escapeHtmlMed(item.name)}</div>
                 <div class="col-generic-name">${escapeHtmlMed(item.generic_name) || '-'}</div>
-                <div>${item.category}</div>
                 <div><span class="${statusClass}">${item.sales_status}</span></div>
+                <div class="col-date">${escapeHtmlMed(item.sales_start_date) || '-'}</div>
+                <div class="col-date">${escapeHtmlMed(item.discontinuation_date) || '-'}</div>
                 <div class="col-alternative">${escapeHtmlMed(item.alternative_medicine) || '-'}</div>
                 <div class="col-notes-cell">${item.notes ? `<span class="col-note">${escapeHtmlMed(item.notes)}</span>` : ''}</div>
                 <div class="action-cell">
@@ -258,9 +251,13 @@ function renderCardView(data) {
                 </div>
                 ${item.generic_name ? `<div class="medicine-card-generic">${escapeHtmlMed(item.generic_name)}</div>` : ''}
                 <div class="medicine-card-badges">
-                    <span class="medicine-card-category">${item.category}</span>
                     <span class="col-status ${statusClass}">${item.sales_status}</span>
                 </div>
+                ${(item.sales_start_date || item.discontinuation_date) ? `
+                <div class="medicine-card-dates">
+                    ${item.sales_start_date ? `<span class="medicine-card-date"><i class="fas fa-play-circle"></i> 開始: ${escapeHtmlMed(item.sales_start_date)}</span>` : ''}
+                    ${item.discontinuation_date ? `<span class="medicine-card-date"><i class="fas fa-stop-circle"></i> 中止: ${escapeHtmlMed(item.discontinuation_date)}</span>` : ''}
+                </div>` : ''}
                 ${item.alternative_medicine ? `
                 <div class="medicine-card-info">
                     <i class="fas fa-exchange-alt"></i>

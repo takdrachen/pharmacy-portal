@@ -28,6 +28,7 @@ const DataStorage = {
     FIELD_MAP_TO_SHEETS: {
         generic_name: 'genericName',
         sales_status: 'salesStatus',
+        sales_start_date: 'salesStartDate',
         discontinuation_date: 'discontinuationDate',
         alternative_medicine: 'alternative',
         supply_info: 'supplyInfo',

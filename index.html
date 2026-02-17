@@ -317,14 +317,7 @@
                 </div>
                 <div class="header-right">
                     <input type="text" class="search-input" id="medicine-search-input" placeholder="薬剤名・一般名・備考で検索..." oninput="renderMedicineList()">
-                    <select id="medicine-category-filter" class="action-btn" onchange="renderMedicineList()">
-                        <option value="">全カテゴリー</option>
-                        <option value="内服薬">内服薬</option>
-                        <option value="外用薬">外用薬</option>
-                        <option value="注射薬">注射薬</option>
-                        <option value="漢方薬">漢方薬</option>
-                        <option value="その他">その他</option>
-                    </select>
+
                     <select id="medicine-status-filter" class="action-btn" onchange="renderMedicineList()">
                         <option value="">全販売状態</option>
                         <option value="その他">その他</option>
@@ -366,17 +359,7 @@
                         <label>一般名</label>
                         <textarea id="inMedicineGenericName" placeholder="一般名" rows="1"></textarea>
                     </div>
-                    <div class="input-group">
-                        <label>カテゴリー <span class="required">*</span></label>
-                        <select id="inMedicineCategory">
-                            <option value="">選択してください</option>
-                            <option value="内服薬">内服薬</option>
-                            <option value="外用薬">外用薬</option>
-                            <option value="注射薬">注射薬</option>
-                            <option value="漢方薬">漢方薬</option>
-                            <option value="その他">その他</option>
-                        </select>
-                    </div>
+
                     <div class="input-group">
                         <label>販売状態 <span class="required">*</span></label>
                         <select id="inMedicineSalesStatus">
@@ -385,6 +368,10 @@
                             <option value="出荷調整中">出荷調整中</option>
                             <option value="新規採用">新規採用</option>
                         </select>
+                    </div>
+                    <div class="input-group">
+                        <label>販売開始日</label>
+                        <input type="text" id="inMedicineSalesStartDate" placeholder="例: 2026年4月1日">
                     </div>
                     <div class="input-group">
                         <label>販売中止日</label>
@@ -418,8 +405,9 @@
                     <div style="text-align:center">★</div>
                     <div>薬剤名</div>
                     <div>一般名</div>
-                    <div>カテゴリー</div>
                     <div>販売状態</div>
+                    <div>販売開始日</div>
+                    <div>販売中止日</div>
                     <div>代替薬品</div>
                     <div>備考</div>
                     <div style="text-align:center">操作</div>
@@ -784,17 +772,7 @@
                     <label>一般名</label>
                     <input type="text" id="medicine-generic-name">
                 </div>
-                <div class="form-group">
-                    <label>カテゴリー <span class="required">*</span></label>
-                    <select id="medicine-category-input" required>
-                        <option value="">選択してください</option>
-                        <option value="内服薬">内服薬</option>
-                        <option value="外用薬">外用薬</option>
-                        <option value="注射薬">注射薬</option>
-                        <option value="漢方薬">漢方薬</option>
-                        <option value="その他">その他</option>
-                    </select>
-                </div>
+
                 <div class="form-group">
                     <label>販売状態 <span class="required">*</span></label>
                     <select id="medicine-sales-status" required>
@@ -804,6 +782,10 @@
                         <option value="出荷調整中">出荷調整中</option>
                         <option value="新規採用">新規採用</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label>販売開始日</label>
+                    <input type="text" id="medicine-sales-start-date" placeholder="例: 2026年4月1日">
                 </div>
                 <div class="form-group">
                     <label>販売中止日</label>
@@ -851,12 +833,12 @@
                         <span id="medicine-detail-generic-name"></span>
                     </div>
                     <div class="detail-row">
-                        <strong>カテゴリー:</strong>
-                        <span id="medicine-detail-category"></span>
-                    </div>
-                    <div class="detail-row">
                         <strong>販売状態:</strong>
                         <span id="medicine-detail-sales-status" class="badge"></span>
+                    </div>
+                    <div class="detail-row" id="medicine-detail-sales-start-row" style="display: none;">
+                        <strong>販売開始日:</strong>
+                        <span id="medicine-detail-sales-start-date"></span>
                     </div>
                     <div class="detail-row" id="medicine-detail-discontinuation-row" style="display: none;">
                         <strong>販売中止日:</strong>

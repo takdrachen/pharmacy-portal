@@ -247,7 +247,6 @@ function updateDashboard() {
                 <div class="dash-medicine-item">
                     <span class="dash-medicine-status ${statusClass}">${m.sales_status || 'その他'}</span>
                     <span class="dash-medicine-name">${escapeHtml(m.name)}</span>
-                    <span class="dash-medicine-category">${m.category || ''}</span>
                 </div>
             `;
         }).join('');
@@ -869,8 +868,8 @@ function openMedicineModal(medicine = null) {
         document.getElementById('medicine-id').value = medicine.id;
         document.getElementById('medicine-name').value = medicine.name;
         document.getElementById('medicine-generic-name').value = medicine.generic_name || '';
-        document.getElementById('medicine-category-input').value = medicine.category;
         document.getElementById('medicine-sales-status').value = medicine.sales_status || 'その他';
+        document.getElementById('medicine-sales-start-date').value = medicine.sales_start_date || '';
         document.getElementById('medicine-discontinuation-date').value = medicine.discontinuation_date || '';
         document.getElementById('medicine-alternative').value = medicine.alternative_medicine || '';
         document.getElementById('medicine-supply-info').value = medicine.supply_info || '';
@@ -896,8 +895,8 @@ function saveMedicine() {
     const data = {
         name: document.getElementById('medicine-name').value,
         generic_name: document.getElementById('medicine-generic-name').value,
-        category: document.getElementById('medicine-category-input').value,
         sales_status: document.getElementById('medicine-sales-status').value,
+        sales_start_date: document.getElementById('medicine-sales-start-date').value,
         discontinuation_date: document.getElementById('medicine-discontinuation-date').value,
         alternative_medicine: document.getElementById('medicine-alternative').value,
         supply_info: document.getElementById('medicine-supply-info').value,
@@ -931,7 +930,6 @@ function showMedicineDetail(id) {
     
     document.getElementById('medicine-detail-name').textContent = medicine.name;
     document.getElementById('medicine-detail-generic-name').textContent = medicine.generic_name || '-';
-    document.getElementById('medicine-detail-category').textContent = medicine.category;
     
     // 販売状態の表示
     const statusBadge = document.getElementById('medicine-detail-sales-status');
@@ -941,6 +939,15 @@ function showMedicineDetail(id) {
                        'badge-category';
     statusBadge.className = `badge ${statusClass}`;
     statusBadge.textContent = medicine.sales_status || 'その他';
+    
+    // 販売開始日の表示
+    const salesStartRow = document.getElementById('medicine-detail-sales-start-row');
+    if (medicine.sales_start_date) {
+        document.getElementById('medicine-detail-sales-start-date').textContent = medicine.sales_start_date;
+        salesStartRow.style.display = 'grid';
+    } else {
+        salesStartRow.style.display = 'none';
+    }
     
     // 販売中止日の表示
     const discontinuationRow = document.getElementById('medicine-detail-discontinuation-row');
