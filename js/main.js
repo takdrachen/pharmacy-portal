@@ -81,6 +81,13 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
         console.error('AIチャットセクション初期化エラー:', e);
     }
+
+    try {
+        initShiftAnalysis();
+        console.log('シフト分析セクション初期化完了');
+    } catch (e) {
+        console.error('シフト分析セクション初期化エラー:', e);
+    }
     
     // データストレージの初期化完了を待ってからデータを読み込む
     function loadAllData() {
@@ -155,6 +162,9 @@ function switchSection(section) {
             break;
         case 'employees':
             loadEmployees();
+            break;
+        case 'shift-analysis':
+            runShiftAnalysis();
             break;
     }
     

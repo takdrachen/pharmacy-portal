@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="css/shift-presets.css">
     <link rel="stylesheet" href="css/medicine-panel.css">
     <link rel="stylesheet" href="css/settings.css">
+    <link rel="stylesheet" href="css/shift-analysis.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <!-- ヘッダー -->
@@ -49,6 +51,10 @@
                 <button class="nav-btn" data-section="ai-chat">
                     <i class="fas fa-robot"></i>
                     <span>AIアシスタント</span>
+                </button>
+                <button class="nav-btn" data-section="shift-analysis">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>シフト分析</span>
                 </button>
                 <button class="nav-btn" data-section="settings">
                     <i class="fas fa-cog"></i>
@@ -524,6 +530,88 @@
             </div>
         </section>
 
+        <!-- シフト分析セクション -->
+        <section id="shift-analysis-section" class="content-section">
+            <div class="section-header">
+                <h2><i class="fas fa-chart-bar"></i> シフト分析</h2>
+                <div class="analysis-filter">
+                    <input type="month" id="analysis-month" />
+                    <button class="btn btn-primary" onclick="runShiftAnalysis()">
+                        <i class="fas fa-sync-alt"></i> 更新
+                    </button>
+                </div>
+            </div>
+
+            <!-- サマリーカード -->
+            <div class="analysis-summary-grid">
+                <div class="analysis-summary-card">
+                    <div class="analysis-summary-icon icon-shifts">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="analysis-summary-info">
+                        <div class="analysis-summary-value" id="analysis-summary-total">—</div>
+                        <div class="analysis-summary-label">月間シフト総数</div>
+                    </div>
+                </div>
+                <div class="analysis-summary-card">
+                    <div class="analysis-summary-icon icon-staff">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <div class="analysis-summary-info">
+                        <div class="analysis-summary-value" id="analysis-summary-staff">—</div>
+                        <div class="analysis-summary-label">出勤スタッフ数</div>
+                    </div>
+                </div>
+                <div class="analysis-summary-card">
+                    <div class="analysis-summary-icon icon-hours">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="analysis-summary-info">
+                        <div class="analysis-summary-value" id="analysis-summary-hours">—</div>
+                        <div class="analysis-summary-label">総労働時間</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- グラフ -->
+            <div class="analysis-charts-row">
+                <div class="analysis-card">
+                    <div class="analysis-card-title">シフトタイプ分布</div>
+                    <div class="analysis-chart-wrapper">
+                        <canvas id="shift-type-chart"></canvas>
+                    </div>
+                </div>
+                <div class="analysis-card">
+                    <div class="analysis-card-title">日別出勤人数</div>
+                    <div class="analysis-chart-wrapper">
+                        <canvas id="daily-staff-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- スタッフ別集計表 -->
+            <div class="analysis-card">
+                <div class="analysis-card-title">スタッフ別集計</div>
+                <table class="staff-analysis-table">
+                    <thead>
+                        <tr>
+                            <th>スタッフ名</th>
+                            <th style="text-align:center;">シフト数</th>
+                            <th>タイプ内訳</th>
+                            <th style="text-align:right;">総労働時間</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staff-analysis-tbody">
+                        <tr>
+                            <td colspan="4" style="text-align:center; padding: 2rem; color: var(--text-tertiary);">
+                                月を選択して「更新」を押してください
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
         <!-- 設定セクション -->
         <section id="settings-section" class="content-section">
             <div class="section-header">
@@ -987,5 +1075,6 @@
     <script src="js/medicine-panel.js"></script>
     <script src="js/dashboard-customize.js"></script>
     <script src="js/settings.js"></script>
+    <script src="js/shift-analysis.js"></script>
 </body>
 </html>
