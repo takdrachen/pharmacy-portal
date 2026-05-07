@@ -1207,19 +1207,41 @@ function closeEmployeeModal() {
 }
 
 function saveEmployee() {
+    const emailValue = document.getElementById('employee-email').value.trim();
+
+    if (emailValue) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailValue)) {
+            showToast('メールアドレスの形式が正しくありません', 'error');
+            document.getElementById('employee-email').focus();
+            return;
+        }
+
+        const existingEmployees = DataStorage.getAll('employees');
+        const duplicate = existingEmployees.find(e =>
+            e.email && e.email.toLowerCase() === emailValue.toLowerCase() &&
+            e.id !== currentEditingEmployeeId
+        );
+        if (duplicate) {
+            showToast(`このメールアドレスはすでに「${duplicate.name}」に登録されています`, 'error');
+            document.getElementById('employee-email').focus();
+            return;
+        }
+    }
+
     const data = {
         name: document.getElementById('employee-name').value,
         furigana: document.getElementById('employee-furigana').value,
         position: document.getElementById('employee-position').value,
         employment_type: document.getElementById('employee-employment-type').value,
         phone: document.getElementById('employee-phone').value,
-        email: document.getElementById('employee-email').value,
+        email: emailValue,
         hire_date: document.getElementById('employee-hire-date').value,
         qualifications: document.getElementById('employee-qualifications').value,
         status: document.getElementById('employee-status').value,
         notes: document.getElementById('employee-notes').value
     };
-    
+
     try {
         if (currentEditingEmployeeId) {
             DataStorage.update('employees', currentEditingEmployeeId, data);
