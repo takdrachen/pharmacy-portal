@@ -81,7 +81,16 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
         console.error('AIチャットセクション初期化エラー:', e);
     }
-    
+
+    try {
+        if (typeof initFilingsSection === 'function') {
+            initFilingsSection();
+            console.log('届出管理セクション初期化完了');
+        }
+    } catch (e) {
+        console.error('届出管理セクション初期化エラー:', e);
+    }
+
     // データストレージの初期化完了を待ってからデータを読み込む
     function loadAllData() {
         console.log('データ読み込み開始...');
@@ -155,6 +164,9 @@ function switchSection(section) {
             break;
         case 'employees':
             loadEmployees();
+            break;
+        case 'filings':
+            if (typeof renderFilingsSection === 'function') renderFilingsSection();
             break;
     }
     

@@ -1,0 +1,276 @@
+/* 届出管理セクション */
+
+/* ヘッダー: 期限バッジ */
+.filings-deadline-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.9rem;
+    background: #fff3e0;
+    color: #e65100;
+    border: 1px solid #ffb74d;
+    border-radius: 20px;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
+}
+
+/* 進捗バー */
+.filings-progress-bar {
+    background: var(--surface-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md) var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.filings-progress-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    align-items: center;
+}
+
+.fp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 14px;
+    font-size: var(--font-size-sm);
+    border: 1px solid transparent;
+}
+
+.fp-chip-todo  { background: #f5f5f7; color: var(--text-secondary); border-color: var(--border-color); }
+.fp-chip-wip   { background: #fff3e0; color: #e65100; border-color: #ffb74d; }
+.fp-chip-done  { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
+.fp-chip-na    { background: #f0f0f0; color: var(--text-tertiary); border-color: #ddd; }
+.fp-chip-total { background: var(--surface-secondary); color: var(--text-secondary); font-weight: var(--font-weight-medium); margin-left: auto; }
+
+.filings-progress-track {
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    display: flex;
+    overflow: hidden;
+}
+
+.fp-bar {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+.fp-bar-done { background: #4caf50; }
+.fp-bar-wip  { background: #ff9800; }
+.fp-bar-na   { background: #bdbdbd; }
+
+/* カテゴリブロック */
+.filings-categories {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.filings-category-block {
+    background: var(--surface-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    border-left-width: 4px;
+    border-left-style: solid;
+}
+
+.filings-category-block.cat-red    { border-left-color: var(--color-error); }
+.filings-category-block.cat-yellow { border-left-color: #f59e0b; }
+.filings-category-block.cat-orange { border-left-color: #f97316; }
+.filings-category-block.cat-green  { border-left-color: var(--color-success); }
+
+.filings-category-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1rem;
+    background: var(--surface-secondary);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+}
+
+.cat-red    .filings-category-header { color: var(--color-error); }
+.cat-yellow .filings-category-header { color: #92400e; }
+.cat-orange .filings-category-header { color: #c2410c; }
+.cat-green  .filings-category-header { color: #166534; }
+
+.filings-category-count {
+    margin-left: auto;
+    background: var(--surface-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.1rem 0.55rem;
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+}
+
+/* テーブル行 */
+.filings-category-table {
+    padding: 0 0.5rem 0.5rem;
+}
+
+.filing-row {
+    display: grid;
+    grid-template-columns: 3fr 1.5fr 1fr 2fr;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid var(--border-color-light, #f0f0f0);
+}
+
+.filing-row:last-child {
+    border-bottom: none;
+}
+
+.filing-row-header {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-tertiary);
+    font-weight: var(--font-weight-medium);
+    padding-top: 0.5rem;
+    padding-bottom: 0.4rem;
+}
+
+.filing-col-name {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.filing-form-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    background: var(--surface-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    font-family: monospace;
+}
+
+/* ステータスボタン */
+.filing-status-btn {
+    display: inline-block;
+    padding: 0.3rem 0.65rem;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    font-size: 0.8rem;
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+}
+
+.filing-status-btn:hover {
+    opacity: 0.8;
+    transform: scale(1.04);
+}
+
+.filing-status-btn:active {
+    transform: scale(0.97);
+}
+
+.status-filing-todo {
+    background: #f5f5f7;
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+}
+
+.status-filing-wip {
+    background: #fff3e0;
+    color: #c05600;
+    border-color: #ffb74d;
+}
+
+.status-filing-done {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-color: #a5d6a7;
+}
+
+.status-filing-na {
+    background: #f0f0f0;
+    color: var(--text-tertiary);
+    border-color: #ddd;
+}
+
+/* メモ列 */
+.filing-col-notes {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.filing-notes-preview {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+
+.filing-notes-empty {
+    font-size: 0.78rem;
+    color: var(--text-tertiary);
+    flex: 1;
+}
+
+.filing-notes-edit-btn {
+    flex-shrink: 0;
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+    .filing-row {
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto;
+    }
+
+    .filing-col-name {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .filing-col-status {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .filing-col-form {
+        display: none;
+    }
+
+    .filing-col-notes {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    .filing-row-header {
+        display: none;
+    }
+
+    .filings-deadline-badge {
+        font-size: 0.72rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    #filings-section .section-header {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+}
