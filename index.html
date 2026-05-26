@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="css/shift-presets.css">
     <link rel="stylesheet" href="css/medicine-panel.css">
     <link rel="stylesheet" href="css/settings.css">
+    <link rel="stylesheet" href="css/filings.css">
 </head>
 <body>
     <!-- ヘッダー -->
@@ -49,6 +50,10 @@
                 <button class="nav-btn" data-section="ai-chat">
                     <i class="fas fa-robot"></i>
                     <span>AIアシスタント</span>
+                </button>
+                <button class="nav-btn" data-section="filings">
+                    <i class="fas fa-file-alt"></i>
+                    <span>届出管理</span>
                 </button>
                 <button class="nav-btn" data-section="settings">
                     <i class="fas fa-cog"></i>
@@ -524,6 +529,23 @@
             </div>
         </section>
 
+        <!-- 届出管理セクション -->
+        <section id="filings-section" class="content-section">
+            <div class="section-header">
+                <h2><i class="fas fa-file-alt"></i> 届出管理</h2>
+                <span class="filings-deadline-badge">
+                    <i class="fas fa-clock"></i>
+                    届出期限：令和8年5月7日（木）〜 6月1日（月）必着
+                </span>
+            </div>
+
+            <!-- 進捗サマリー -->
+            <div class="filings-progress-bar" id="filingsProgressBar"></div>
+
+            <!-- カテゴリ別一覧 -->
+            <div class="filings-categories" id="filingsCategories"></div>
+        </section>
+
         <!-- 設定セクション -->
         <section id="settings-section" class="content-section">
             <div class="section-header">
@@ -981,11 +1003,34 @@
         </div>
     </div>
 
+    <!-- モーダル: 届出メモ編集 -->
+    <div id="filing-notes-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="filing-notes-modal-title">メモ編集</h3>
+                <button class="close-btn" onclick="closeFilingNotesModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div style="padding: var(--spacing-lg);">
+                <div class="form-group">
+                    <label>メモ</label>
+                    <textarea id="filing-notes-input" rows="5" placeholder="進捗・確認事項などを記入..." style="width:100%;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeFilingNotesModal()">キャンセル</button>
+                <button type="button" class="btn btn-primary" onclick="saveFilingNotes()">保存</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/sheets-api.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/main.js"></script>
     <script src="js/medicine-panel.js"></script>
     <script src="js/dashboard-customize.js"></script>
     <script src="js/settings.js"></script>
+    <script src="js/filings.js"></script>
 </body>
 </html>
