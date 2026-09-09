@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>在庫表 - 緑ヶ丘調剤薬局</title>
+<link rel="icon" type="image/png" href="img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/inventory.css">
+</head>
+<body>
+<div class="app" id="app">
+
+    <!-- ===== サイドバー ===== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img class="sidebar-logo" src="img/logo.png" alt="緑ヶ丘調剤薬局">
+            <button class="sidebar-toggle" id="sidebarToggle" title="メニューを折りたたむ">
+                <svg class="sidebar-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <button class="nav-item active" data-view="table" title="在庫一覧">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                <span class="nav-label">在庫一覧</span>
+            </button>
+            <button class="nav-item" data-view="card" title="カード表示">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                <span class="nav-label">カード表示</span>
+            </button>
+            <button class="nav-item" data-view="shelf" title="棚別表示">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                <span class="nav-label">棚別表示</span>
+            </button>
+
+            <div class="nav-divider"></div>
+
+            <button class="nav-item" id="navImport" title="CSV読込">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
+                <span class="nav-label">CSV読込</span>
+            </button>
+            <a class="nav-item" href="index.html" title="ポータルへ戻る">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span class="nav-label">ポータル</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sync-badge disconnected" id="dataStatus" title="データの取込状況">
+                <span class="sync-dot"></span>
+                <span id="dataStatusText">データ未読込</span>
+            </div>
+            <button class="btn-reset-data" id="resetDataBtn" hidden title="読み込んだCSVを破棄して、収録されているデータに戻します">元のデータに戻す</button>
+        </div>
+    </aside>
+
+    <!-- ===== メインエリア ===== -->
+    <div class="main-area">
+
+        <!-- 絞り込みパネル -->
+        <aside class="filter-panel" id="filterPanel">
+            <button class="panel-toggle" id="filterToggle" title="絞り込みパネルを折りたたむ">
+                <svg class="panel-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="10" height="10"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div class="panel-inner">
+                <div class="panel-header">
+                    <h2>絞り込み<span class="filter-count" id="filterCount" hidden>0</span></h2>
+                </div>
+
+                <div class="panel-body">
+                    <div class="filter-block">
+                        <span class="filter-label">使用区分</span>
+                        <div class="chip-row" id="quickUse"></div>
+                    </div>
+
+                    <div class="filter-block">
+                        <label class="filter-label" for="stockFilter">在庫状況</label>
+                        <select class="form-select" id="stockFilter">
+                            <option value="">すべて</option>
+                            <option value="in">在庫あり（1以上）</option>
+                            <option value="low">残りわずか（1〜10）</option>
+                            <option value="zero">在庫0・未設定</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-block">
+                        <label class="filter-label" for="geFilter">後発区分</label>
+                        <select class="form-select" id="geFilter">
+                            <option value="">すべて</option>
+                            <option value="ge">GE（後発品）</option>
+                            <option value="brand">GE以外</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-block">
+                        <label class="filter-label" for="shelfFilter">棚</label>
+                        <select class="form-select" id="shelfFilter"><option value="">すべて</option></select>
+                    </div>
+
+                    <div class="filter-block">
+                        <label class="filter-label" for="wholesalerFilter">帳合先</label>
+                        <select class="form-select" id="wholesalerFilter"><option value="">すべて</option></select>
+                    </div>
+
+                    <div class="filter-block">
+                        <label class="filter-label" for="makerFilter">メーカー</label>
+                        <select class="form-select" id="makerFilter"><option value="">すべて</option></select>
+                    </div>
+
+                    <div class="filter-block">
+                        <span class="filter-label">属性</span>
+                        <div class="chip-row" id="attrChips"></div>
+                    </div>
+
+                    <div class="filter-block">
+                        <span class="filter-label">注意フラグ</span>
+                        <div class="chip-row" id="flagChips">
+                            <label class="chip"><input type="checkbox" data-flag="managed"><span>管理品</span></label>
+                            <label class="chip"><input type="checkbox" data-flag="transition"><span>経過措置あり</span></label>
+                            <label class="chip"><input type="checkbox" data-flag="discontinued"><span>販売中止あり</span></label>
+                            <label class="chip"><input type="checkbox" data-flag="note"><span>第３棚名称に記載</span></label>
+                            <label class="chip"><input type="checkbox" data-flag="supply"><span>供給確保品</span></label>
+                        </div>
+                    </div>
+
+                    <div class="filter-block">
+                        <label class="filter-label" for="sortSelect">並び順</label>
+                        <select class="form-select" id="sortSelect">
+                            <option value="name">商品名（五十音）</option>
+                            <option value="shelf">棚番</option>
+                            <option value="stockDesc">在庫数（多い順）</option>
+                            <option value="stockAsc">在庫数（少ない順）</option>
+                            <option value="adoptDesc">採用日（新しい順）</option>
+                            <option value="priceDesc">単位薬価（高い順）</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="panel-footer">
+                    <button class="btn-new" id="resetFilterBtn">条件をすべて解除</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- コンテンツ -->
+        <div class="content-panel">
+            <div class="content-card">
+
+                <div class="content-header">
+                    <h1 class="content-title" id="contentTitle">在庫一覧</h1>
+                    <div class="content-actions">
+                        <button class="btn btn-filter-mobile" id="filterMobileBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                            絞り込み
+                        </button>
+                        <button class="btn" id="exportBtn" title="表示中の内容をCSVで保存">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            CSV出力
+                        </button>
+                        <button class="btn" id="printBtn" title="表示中の内容を印刷">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                            印刷
+                        </button>
+                        <button class="btn btn-primary" id="importBtn" title="ミザルの採用品一覧CSVを読み込みます">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
+                            CSV読込
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 未読込時の案内 -->
+                <div class="empty-state" id="emptyState" hidden>
+                    <div class="empty-box" id="dropZone">
+                        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
+                        <h2>採用品一覧CSVを読み込んでください</h2>
+                        <p class="empty-lead">ミザルで出力した<strong>採用品一覧設定CSV（MedAdoptlist.csv）</strong>を、ここにドラッグ＆ドロップするか、下のボタンから選択してください。</p>
+                        <button class="btn btn-primary btn-lg" id="emptyImportBtn">CSVファイルを選択</button>
+                        <ul class="empty-notes">
+                            <li>読み込んだデータは<strong>このパソコン（ブラウザ）内だけ</strong>に保存されます。インターネット上には送信されません。</li>
+                            <li>次回からは自動で表示されます。在庫数を最新にするにはミザルからCSVを再出力して読み込み直してください。</li>
+                            <li>文字コードはShift-JIS / UTF-8のどちらでも読み込めます。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 在庫表本体 -->
+                <div id="appState" hidden>
+                    <div class="alert alert-warning" id="staleAlert" hidden>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        <span id="staleAlertText"></span>
+                    </div>
+
+                    <div class="search-row">
+                        <div class="search-wrap">
+                            <input type="search" class="search-input search-input-lg" id="searchInput" autocomplete="off"
+                                   placeholder="商品名・一般名・メーカー・棚番・YJコード・JAN/GTIN で検索（スペース区切りでAND検索）">
+                            <button class="search-clear" id="searchClear" hidden aria-label="検索条件をクリア">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="stats-row" id="statsArea"></div>
+
+                    <div class="result-area" id="resultArea"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 詳細モーダル -->
+<div class="modal-overlay" id="detailModal" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+        <div class="modal-header">
+            <h3 id="detailTitle"></h3>
+            <button class="btn-icon" data-close="1" aria-label="閉じる">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body" id="detailBody"></div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<input type="file" id="csvFileInput" accept=".csv,text/csv" hidden>
+
+<script src="js/inventory.js"></script>
+</body>
+</html>
