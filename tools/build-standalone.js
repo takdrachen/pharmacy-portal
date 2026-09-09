@@ -6,6 +6,11 @@
  * ミザルの採用品一覧CSVを埋め込む。外部への通信は行わないため、
  * デスクトップに置いてダブルクリックするだけで、オフラインでも使える。
  *
+ * 出力先のフォルダーには、Windows用のランチャー（tools/launcher.bat）と
+ * ショートカット用アイコン（img/logo.ico）も一緒に置く。
+ * ランチャーはブラウザのタブではなく独立したウィンドウで開くためのもので、
+ * HTMLをそのままダブルクリックしても使える。
+ *
  *   使い方: node tools/build-standalone.js <CSVファイル> [出力先]
  *   例:     node tools/build-standalone.js ~/MedAdoptlist.csv dist/在庫表.html
  *
@@ -93,10 +98,21 @@ html = html.replace(/[ \t]*<script src="js\/inventory\.js"><\/script>/, bootstra
     }
 });
 
-fs.mkdirSync(path.dirname(outPath), { recursive: true });
+const outDir = path.dirname(outPath);
+fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(outPath, html, 'utf8');
+
+// Windows用のランチャーとアイコンを添える。
+// launcher.bat は日本語を含むためCP932で保存してある。cmd.exeがそのまま読めるよう、
+// 文字コードを変換せずバイト列のまま複製する。
+const launcherOut = path.join(outDir, '在庫表を開く.bat');
+fs.copyFileSync(path.join(ROOT, 'tools/launcher.bat'), launcherOut);
+const iconOut = path.join(outDir, '在庫表.ico');
+fs.copyFileSync(path.join(ROOT, 'img/logo.ico'), iconOut);
 
 const kb = n => (n / 1024).toFixed(0) + 'KB';
 console.log('出力: ' + outPath);
 console.log('  品目数（概算）: ' + itemCount);
 console.log('  ファイルサイズ: ' + kb(Buffer.byteLength(html, 'utf8')));
+console.log('添付: ' + launcherOut);
+console.log('      ' + iconOut);
