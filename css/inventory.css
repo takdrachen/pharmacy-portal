@@ -23,7 +23,7 @@
 [hidden] { display: none !important; }
 
 body {
-  font-family: 'Noto Sans JP', sans-serif;
+  font-family: 'Noto Sans JP', 'Yu Gothic UI', 'Yu Gothic', Meiryo, -apple-system, 'Hiragino Sans', sans-serif;
   background: var(--bg);
   color: #333;
   font-size: 14px;
@@ -87,6 +87,14 @@ a { color: inherit; text-decoration: none; }
 .nav-divider { height: 1px; background: #f0f0f0; margin: 8px 12px; }
 
 .sidebar-footer { padding: 12px 16px; border-top: 1px solid #f0f0f0; }
+.btn-reset-data {
+  display: block; width: 100%; margin-top: 6px;
+  padding: 4px 8px; border: none; background: none;
+  color: #94a3b8; font-size: 11px; font-weight: 500;
+  border-radius: 8px; transition: all 0.15s;
+}
+.btn-reset-data:hover { background: #f1f5f9; color: #475569; }
+.sidebar.collapsed .btn-reset-data { display: none; }
 .sync-badge {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 4px 10px; border-radius: 20px;

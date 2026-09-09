@@ -7,3 +7,6 @@ data/*.csv
 .DS_Store
 Thumbs.db
 *.swp
+
+# 単一ファイル版のビルド出力（在庫数・帳合価格を含むため管理対象外）
+dist/

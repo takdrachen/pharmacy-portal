@@ -16,6 +16,10 @@
 
     const VIEW_TITLES = { table: '在庫一覧', card: 'カード表示', shelf: '棚別表示' };
 
+    // 単一ファイル版（デスクトップ用）では、ビルド時にCSVを埋め込む。
+    // ポータル版では未定義になり、CSV読込かdata/MedAdoptlist.csvから読む。
+    const EMBEDDED = (typeof window !== 'undefined' && window.INVENTORY_EMBEDDED) || null;
+
     // ========== 状態 ==========
     let items = [];       // 全品目
     let meta = null;      // { importedAt, fileName }
@@ -721,7 +725,11 @@
         const list = buildItems(payload.csv);
         list.forEach((it, i) => { it._i = i; });
         items = list;
-        meta = { importedAt: payload.importedAt, fileName: payload.fileName };
+        meta = {
+            importedAt: payload.importedAt,
+            fileName: payload.fileName,
+            source: payload.source === 'embedded' ? 'embedded' : 'imported'
+        };
 
         $('emptyState').hidden = true;
         $('appState').hidden = false;
@@ -745,15 +753,22 @@
         const stale = days !== null && days >= STALE_DAYS;
         const when = formatDateTime(meta.importedAt);
         const ago = days === null ? '' : (days === 0 ? '本日' : days + '日前');
+        const embedded = meta.source === 'embedded';
 
         badge.className = 'sync-badge ' + (stale ? 'stale' : 'connected');
-        text.textContent = ago ? `取込 ${ago}` : '取込済み';
-        badge.title = `取込日時: ${when}`;
+        text.textContent = (embedded ? '元データ' : '取込') + (ago ? ` ${ago}` : '');
+        badge.title = embedded
+            ? `このファイルに収録されているデータ（${when} 取込）`
+            : `読み込んだCSV: ${when}`;
+
+        // 読み込んだCSVを使っているときだけ、収録データに戻せるようにする
+        const resetBtn = $('resetDataBtn');
+        if (resetBtn) resetBtn.hidden = !(EMBEDDED && !embedded);
 
         const alertEl = $('staleAlert');
         if (stale) {
             $('staleAlertText').textContent =
-                `在庫データを取り込んでから${days}日経過しています（取込 ${when}）。ミザルから採用品一覧CSVを再出力して読み込み直してください。`;
+                `${embedded ? 'このファイルのデータは' : '在庫データを取り込んでから'}${days}日${embedded ? '前のものです' : '経過しています'}（${when} 取込）。ミザルから採用品一覧CSVを再出力して読み込み直してください。`;
             alertEl.hidden = false;
         } else {
             alertEl.hidden = true;
@@ -787,6 +802,8 @@
 
     /** data/MedAdoptlist.csv が置かれていれば初回のみ自動で読み込む */
     function tryLoadLocalCsv() {
+        // file:// で開いた場合はfetchできないので試みない
+        if (location.protocol === 'file:') return Promise.resolve(false);
         return fetch(LOCAL_CSV_PATH, { cache: 'no-store' })
             .then(res => (res.ok ? res.arrayBuffer() : Promise.reject(new Error('not found'))))
             .then(buf => {
@@ -923,6 +940,10 @@
             });
         });
 
+        // 収録データに戻す
+        const resetDataBtn = $('resetDataBtn');
+        if (resetDataBtn) resetDataBtn.addEventListener('click', resetToEmbedded);
+
         // 出力・印刷
         $('exportBtn').addEventListener('click', exportCsv);
         $('printBtn').addEventListener('click', () => window.print());
@@ -951,25 +972,51 @@
 
     // ========== 起動 ==========
 
+    /** データの適用を試し、成功すればtrueを返す */
+    function tryApply(payload, errorMessage) {
+        try {
+            applyData(payload);
+            $('searchInput').focus();
+            return true;
+        } catch (e) {
+            console.error(e);
+            showToast(errorMessage + 'CSVを読み込み直してください。', 'error');
+            return false;
+        }
+    }
+
+    /** 読み込んだCSVを破棄し、ファイル収録のデータに戻す */
+    function resetToEmbedded() {
+        if (!EMBEDDED) return;
+        if (!window.confirm('読み込んだCSVを破棄して、このファイルに収録されているデータに戻します。よろしいですか？')) return;
+        try {
+            localStorage.removeItem(STORAGE_KEY);
+        } catch (e) { /* 消せなくても収録データの表示は行う */ }
+        if (tryApply({
+            csv: EMBEDDED.csv,
+            importedAt: EMBEDDED.importedAt,
+            fileName: EMBEDDED.fileName || '',
+            source: 'embedded'
+        }, 'このファイルに収録されているデータを読み込めませんでした。')) {
+            showToast('収録されているデータに戻しました', 'success');
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         loadPrefs();
         updateViewButtons();
         bindEvents();
 
+        // 読み込んだCSV（localStorage）→ ファイル収録のデータ → data/MedAdoptlist.csv の順に試す
         const saved = loadSavedData();
-        if (saved) {
-            try {
-                applyData(saved);
-                $('searchInput').focus();
-            } catch (e) {
-                console.error(e);
-                $('emptyState').hidden = false;
-                showToast('保存されていたデータを読み込めませんでした。CSVを読み込み直してください。', 'error');
-            }
-            return;
-        }
+        if (saved && tryApply(saved, '保存されていたデータを読み込めませんでした。')) return;
+        if (EMBEDDED && tryApply({
+            csv: EMBEDDED.csv,
+            importedAt: EMBEDDED.importedAt,
+            fileName: EMBEDDED.fileName || '',
+            source: 'embedded'
+        }, 'このファイルに収録されているデータを読み込めませんでした。')) return;
 
-        // 保存データが無い場合は data/MedAdoptlist.csv を試し、無ければ案内を表示
         tryLoadLocalCsv().then(loaded => {
             if (!loaded) {
                 $('emptyState').hidden = false;
