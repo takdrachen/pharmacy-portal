@@ -142,6 +142,29 @@ body {
     font-size: var(--font-size-sm);
 }
 
+/* 別ページへのナビゲーションリンク（在庫表など） */
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+}
+
+.nav-link:hover {
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link i {
+    font-size: var(--font-size-sm);
+}
+
 /* ========== メインコンテンツ ========== */
 .main-content {
     max-width: 1400px;
@@ -827,13 +850,16 @@ body {
     .main-content {
         padding: var(--spacing-md);
     }
-    .nav-btn span {
+    .nav-btn span,
+    .nav-link span {
         display: none;
     }
-    .nav-btn {
+    .nav-btn,
+    .nav-link {
         padding: 8px 10px;
     }
-    .nav-btn i {
+    .nav-btn i,
+    .nav-link i {
         font-size: var(--font-size-base);
     }
     .section-header h2 {

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在庫表（ミザル停止時間帯用） - 緑ヶ丘調剤薬局</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/inventory.css">
+</head>
+<body class="inv-body">
+    <!-- ヘッダー -->
+    <header class="header inv-header">
+        <div class="header-content inv-header-content">
+            <div class="logo">
+                <i class="fas fa-boxes-stacked"></i>
+                <div class="inv-logo-text">
+                    <h1>在庫表</h1>
+                    <span class="inv-logo-sub">ミザル停止時間帯用</span>
+                </div>
+            </div>
+            <div class="inv-header-right">
+                <div class="inv-data-status" id="dataStatus">
+                    <i class="fas fa-circle-info"></i><span>データ未読込</span>
+                </div>
+                <button class="inv-header-btn" id="importBtn" title="ミザルの採用品一覧CSVを読み込みます">
+                    <i class="fas fa-file-import"></i><span>CSV読込</span>
+                </button>
+                <a class="inv-header-btn" href="index.html" title="ポータルに戻る">
+                    <i class="fas fa-house"></i><span>ポータル</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="inv-main">
+        <!-- 未読込時の案内 -->
+        <section class="inv-empty" id="emptyState" hidden>
+            <div class="inv-empty-card" id="dropZone">
+                <i class="fas fa-file-csv inv-empty-icon"></i>
+                <h2>採用品一覧CSVを読み込んでください</h2>
+                <p class="inv-empty-lead">
+                    ミザルで出力した<strong>採用品一覧設定CSV（MedAdoptlist.csv）</strong>を、
+                    ここにドラッグ＆ドロップするか、下のボタンから選択してください。
+                </p>
+                <button class="inv-btn inv-btn-primary inv-btn-lg" id="emptyImportBtn">
+                    <i class="fas fa-folder-open"></i> CSVファイルを選択
+                </button>
+                <ul class="inv-empty-notes">
+                    <li>読み込んだデータは<strong>このパソコン（ブラウザ）内だけ</strong>に保存されます。インターネット上には送信されません。</li>
+                    <li>次回からは自動で表示されます。在庫数を最新にするにはミザルからCSVを再出力して読み込み直してください。</li>
+                    <li>文字コードはShift-JIS / UTF-8のどちらでも読み込めます。</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 在庫表本体 -->
+        <section class="inv-app" id="appState" hidden>
+            <!-- データ鮮度の警告 -->
+            <div class="inv-alert inv-alert-warning" id="staleAlert" hidden>
+                <i class="fas fa-triangle-exclamation"></i>
+                <span id="staleAlertText"></span>
+            </div>
+
+            <!-- 検索 -->
+            <div class="inv-search-bar">
+                <div class="inv-search-box">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="search" id="searchInput" autocomplete="off"
+                           placeholder="商品名・一般名・メーカー・棚番・YJコード・JAN/GTIN で検索（スペース区切りでAND検索）">
+                    <button class="inv-search-clear" id="searchClear" hidden aria-label="検索条件をクリア">
+                        <i class="fas fa-circle-xmark"></i>
+                    </button>
+                </div>
+                <button class="inv-btn inv-btn-ghost" id="toggleFilterBtn" aria-expanded="false">
+                    <i class="fas fa-sliders"></i> 詳細フィルター
+                    <span class="inv-filter-count" id="filterCount" hidden>0</span>
+                </button>
+            </div>
+
+            <!-- クイックフィルタ -->
+            <div class="inv-quick-row" id="quickUse"></div>
+
+            <!-- 詳細フィルター -->
+            <div class="inv-filter-panel" id="filterPanel" hidden>
+                <div class="inv-filter-grid">
+                    <label class="inv-field">
+                        <span class="inv-field-label">在庫状況</span>
+                        <select id="stockFilter">
+                            <option value="">すべて</option>
+                            <option value="in">在庫あり（1以上）</option>
+                            <option value="low">残りわずか（1〜10）</option>
+                            <option value="zero">在庫0・未設定</option>
+                        </select>
+                    </label>
+                    <label class="inv-field">
+                        <span class="inv-field-label">後発区分</span>
+                        <select id="geFilter">
+                            <option value="">すべて</option>
+                            <option value="ge">GE（後発品）</option>
+                            <option value="brand">GE以外</option>
+                        </select>
+                    </label>
+                    <label class="inv-field">
+                        <span class="inv-field-label">棚</span>
+                        <select id="shelfFilter"><option value="">すべて</option></select>
+                    </label>
+                    <label class="inv-field">
+                        <span class="inv-field-label">帳合先</span>
+                        <select id="wholesalerFilter"><option value="">すべて</option></select>
+                    </label>
+                    <label class="inv-field">
+                        <span class="inv-field-label">メーカー</span>
+                        <select id="makerFilter"><option value="">すべて</option></select>
+                    </label>
+                    <label class="inv-field">
+                        <span class="inv-field-label">並び順</span>
+                        <select id="sortSelect">
+                            <option value="name">商品名（五十音）</option>
+                            <option value="shelf">棚番</option>
+                            <option value="stockDesc">在庫数（多い順）</option>
+                            <option value="stockAsc">在庫数（少ない順）</option>
+                            <option value="adoptDesc">採用日（新しい順）</option>
+                            <option value="priceDesc">単位薬価（高い順）</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="inv-filter-block">
+                    <span class="inv-field-label">属性（CSVの属性欄）</span>
+                    <div class="inv-chip-row" id="attrChips"></div>
+                </div>
+
+                <div class="inv-filter-block">
+                    <span class="inv-field-label">注意フラグ</span>
+                    <div class="inv-chip-row" id="flagChips">
+                        <label class="inv-chip"><input type="checkbox" data-flag="managed"><span><i class="fas fa-lock"></i> 管理品</span></label>
+                        <label class="inv-chip"><input type="checkbox" data-flag="transition"><span><i class="fas fa-hourglass-half"></i> 経過措置あり</span></label>
+                        <label class="inv-chip"><input type="checkbox" data-flag="discontinued"><span><i class="fas fa-ban"></i> 販売中止あり</span></label>
+                        <label class="inv-chip"><input type="checkbox" data-flag="note"><span><i class="fas fa-note-sticky"></i> 第３棚名称に記載あり</span></label>
+                        <label class="inv-chip"><input type="checkbox" data-flag="supply"><span><i class="fas fa-shield-halved"></i> 供給確保品</span></label>
+                    </div>
+                </div>
+
+                <div class="inv-filter-actions">
+                    <button class="inv-btn inv-btn-ghost" id="resetFilterBtn"><i class="fas fa-rotate-left"></i> 条件をすべて解除</button>
+                </div>
+            </div>
+
+            <!-- 集計・操作 -->
+            <div class="inv-stats-bar">
+                <div class="inv-stats" id="statsArea"></div>
+                <div class="inv-view-actions">
+                    <div class="inv-segmented" role="group" aria-label="表示切替">
+                        <button class="inv-seg-btn active" id="viewTableBtn" data-view="table"><i class="fas fa-table-list"></i> 一覧</button>
+                        <button class="inv-seg-btn" id="viewCardBtn" data-view="card"><i class="fas fa-grip"></i> カード</button>
+                        <button class="inv-seg-btn" id="viewShelfBtn" data-view="shelf"><i class="fas fa-layer-group"></i> 棚別</button>
+                    </div>
+                    <button class="inv-btn inv-btn-ghost" id="exportBtn" title="表示中の内容をCSVで保存"><i class="fas fa-file-export"></i> CSV出力</button>
+                    <button class="inv-btn inv-btn-ghost" id="printBtn" title="表示中の内容を印刷"><i class="fas fa-print"></i> 印刷</button>
+                </div>
+            </div>
+
+            <!-- 結果表示 -->
+            <div class="inv-result" id="resultArea"></div>
+        </section>
+    </main>
+
+    <!-- 詳細モーダル -->
+    <div class="inv-modal" id="detailModal" hidden>
+        <div class="inv-modal-backdrop" data-close="1"></div>
+        <div class="inv-modal-content" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+            <div class="inv-modal-header">
+                <h2 id="detailTitle"></h2>
+                <button class="inv-modal-close" data-close="1" aria-label="閉じる"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div class="inv-modal-body" id="detailBody"></div>
+        </div>
+    </div>
+
+    <input type="file" id="csvFileInput" accept=".csv,text/csv" hidden>
+
+    <footer class="inv-footer">
+        <p>この在庫数はミザルから出力したCSVの内容です。出力後の入出庫は反映されません。正式な在庫はミザルで確認してください。</p>
+    </footer>
+
+    <script src="js/inventory.js"></script>
+</body>
+</html>
