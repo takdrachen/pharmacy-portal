@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="css/shift-presets.css">
     <link rel="stylesheet" href="css/medicine-panel.css">
     <link rel="stylesheet" href="css/settings.css">
+    <link rel="stylesheet" href="css/rx-scan.css">
 </head>
 <body>
     <!-- ヘッダー -->
@@ -45,6 +46,10 @@
                 <button class="nav-btn" data-section="employees">
                     <i class="fas fa-users"></i>
                     <span>従業員管理</span>
+                </button>
+                <button class="nav-btn" data-section="rx-scan">
+                    <i class="fas fa-camera"></i>
+                    <span>処方箋読取</span>
                 </button>
                 <button class="nav-btn" data-section="ai-chat">
                     <i class="fas fa-robot"></i>
@@ -524,6 +529,91 @@
             </div>
         </section>
 
+        <!-- 処方箋・お薬手帳 読取セクション -->
+        <section id="rx-scan-section" class="content-section">
+            <div class="section-header">
+                <h2><i class="fas fa-camera"></i> 処方箋・お薬手帳 読取</h2>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn btn-secondary" onclick="window.openAPIKeyModal()">
+                        <i class="fas fa-key"></i> APIキー設定
+                    </button>
+                    <button class="btn btn-secondary" id="rx-model-btn" title="使用するGeminiモデルを変更">
+                        <i class="fas fa-microchip"></i> <span id="rx-model-name"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="rx-notice">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    画像は Google Gemini API に送信されて読み取られます。患者氏名などの個人情報が写らないよう、
+                    <strong>薬品名の部分だけを撮影・トリミング</strong>してください。
+                    AIの読み取りには誤りが起こり得るため、<strong>結果は必ず原本と照合</strong>してください。
+                </div>
+            </div>
+
+            <div class="rx-layout">
+                <!-- 画像入力 -->
+                <div class="rx-panel">
+                    <h3 class="rx-panel-title"><i class="fas fa-image"></i> 1. 画像を追加</h3>
+                    <div class="rx-dropzone" id="rx-dropzone">
+                        <div id="rx-drop-empty" class="rx-drop-empty">
+                            <i class="fas fa-file-prescription"></i>
+                            <p>処方箋・お薬手帳の写真をここにドラッグ＆ドロップ<br>（貼り付け Ctrl+V も可・複数枚可）</p>
+                        </div>
+                        <div id="rx-image-list" class="rx-image-list"></div>
+                    </div>
+                    <div class="rx-actions">
+                        <button class="btn btn-secondary" id="rx-camera-btn">
+                            <i class="fas fa-camera"></i> カメラで撮影
+                        </button>
+                        <button class="btn btn-secondary" id="rx-file-btn">
+                            <i class="fas fa-folder-open"></i> 画像を選択
+                        </button>
+                        <button class="btn btn-secondary" id="rx-clear-images-btn" style="display:none;">
+                            <i class="fas fa-trash"></i> 画像をクリア
+                        </button>
+                    </div>
+                    <input type="file" id="rx-camera-input" accept="image/*" capture="environment" hidden>
+                    <input type="file" id="rx-file-input" accept="image/*" multiple hidden>
+                    <button class="btn btn-primary rx-run-btn" id="rx-run-btn" disabled>
+                        <i class="fas fa-magic"></i> 薬品名を読み取る
+                    </button>
+                </div>
+
+                <!-- 結果 -->
+                <div class="rx-panel" id="rx-result-panel" style="display:none;">
+                    <h3 class="rx-panel-title">
+                        <i class="fas fa-pills"></i> 2. 抽出結果
+                        <span class="rx-count" id="rx-result-count">0件</span>
+                    </h3>
+                    <div class="rx-result-toolbar">
+                        <label class="rx-select-all">
+                            <input type="checkbox" id="rx-select-all" checked> すべて選択
+                        </label>
+                        <button class="btn btn-secondary btn-sm" id="rx-add-row-btn">
+                            <i class="fas fa-plus"></i> 行を追加
+                        </button>
+                    </div>
+                    <ul class="rx-result-list" id="rx-result-list"></ul>
+
+                    <h3 class="rx-panel-title rx-panel-title-sub"><i class="fas fa-copy"></i> 3. コピー</h3>
+                    <div class="rx-copy-options">
+                        <label for="rx-separator">区切り</label>
+                        <select id="rx-separator">
+                            <option value="newline">改行</option>
+                            <option value="comma">読点（、）</option>
+                            <option value="tab">タブ</option>
+                        </select>
+                    </div>
+                    <textarea id="rx-output" class="rx-output" rows="6" readonly></textarea>
+                    <button class="btn btn-primary rx-run-btn" id="rx-copy-all-btn">
+                        <i class="fas fa-copy"></i> チェックした薬品名をコピー
+                    </button>
+                </div>
+            </div>
+        </section>
+
         <!-- 設定セクション -->
         <section id="settings-section" class="content-section">
             <div class="section-header">
@@ -987,5 +1077,6 @@
     <script src="js/medicine-panel.js"></script>
     <script src="js/dashboard-customize.js"></script>
     <script src="js/settings.js"></script>
+    <script src="js/rx-scan.js"></script>
 </body>
 </html>
